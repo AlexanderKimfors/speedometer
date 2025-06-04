@@ -4,12 +4,31 @@
 
 window::window()
 {
+    
+    // Align labels and value labels
+    speedLabel.setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    tempLabel.setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    batteryLabel.setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    
+
+    speedValueLabel.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    tempValueLabel.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    batteryValueLabel.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+
+    int maxLabelWidth = qMax(speedLabel.sizeHint().width(),
+                             qMax(tempLabel.sizeHint().width(), batteryLabel.sizeHint().width()));
+
+    speedLabel.setFixedWidth(maxLabelWidth);
+    tempLabel.setFixedWidth(maxLabelWidth);
+    batteryLabel.setFixedWidth(maxLabelWidth);
+    lightSignalsLabel.setFixedWidth(maxLabelWidth);
+
     auto setupSlider = [](QSlider &slider, int min, int max)
     {
         slider.setOrientation(Qt::Horizontal);
         slider.setRange(min, max);
         slider.setValue(min);
-        slider.setFixedWidth(600); 
+        slider.setFixedWidth(600);
     };
 
     setupSlider(speedSlider, 0, 240);

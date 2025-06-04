@@ -9,6 +9,7 @@ set(CMAKE_AUTOMOC ON)
 add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 add_library(client_gui STATIC ./desktop/client/src/window.cpp ./desktop/client/src/canvas.cpp)
 target_include_directories(client_gui PRIVATE ./desktop/client/include ./shared)
@@ -19,14 +20,29 @@ target_include_directories(client_app PRIVATE ./desktop/client/include)
 target_link_libraries(client_app PRIVATE client_gui)
 target_link_libraries(client_app PRIVATE Qt6::Widgets)
 
-add_library(server_gui STATIC ./desktop/server/src/window.cpp)
+set(SERVER_GUI_SOURCES
+    ./desktop/server/src/window.cpp
+)
+
+set(SERVER_GUI_HEADERS
+    ./desktop/server/include/window.h
+)
+
+add_library(server_gui STATIC
+    ${SERVER_GUI_SOURCES}
+    ${SERVER_GUI_HEADERS}
+)
+
 target_include_directories(server_gui PRIVATE ./desktop/server/include ./shared)
 target_link_libraries(server_gui PRIVATE Qt6::Widgets)
+
+
 
 add_executable(server_app desktop/server/main.cpp)
 target_include_directories(server_app PRIVATE ./desktop/server/include)
 target_link_libraries(server_app PRIVATE server_gui)
 target_link_libraries(server_app PRIVATE Qt6::Widgets)
+target_link_libraries(server_app PRIVATE Qt6::Core)
 
 
 #---------------------------------------------------------------------------------------------

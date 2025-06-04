@@ -31,7 +31,7 @@ private:
     QSlider tempSlider;
     QSlider batterySlider;
 
-    QLabel speedLabel{"             Speed:"};
+    QLabel speedLabel{"Speed:"};
     QLabel speedValueLabel{"0 Km/h"};
 
     QLabel tempLabel{"Temperature:"};
