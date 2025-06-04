@@ -5,6 +5,9 @@
 
 class Window : public QDialog
 {
+
+public:
+    explicit Window(QWidget *parent = nullptr);
 };
 
-#endif
+#endif // WINDOW_H
