@@ -1,2 +1,2 @@
-//#include "setting.h"
+#include "setting.h"
 #include "tcpservice.h"

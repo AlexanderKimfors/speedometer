@@ -1,5 +1,5 @@
 #include "window.h"
-// #include "setting.h"
+#include "setting.h"
 #include <QDebug>
 
 window::window()
