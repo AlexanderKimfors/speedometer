@@ -31,16 +31,16 @@ private:
     QSlider tempSlider;
     QSlider batterySlider;
 
-    QLabel speedLabel{"Speed:"};
+    QLabel speedLabel{"             Speed:"};
     QLabel speedValueLabel{"0 Km/h"};
 
     QLabel tempLabel{"Temperature:"};
     QLabel tempValueLabel{"-60 °C"};
 
-    QLabel batteryLabel{"Battery:"};
+    QLabel batteryLabel{"Battery Level:"};
     QLabel batteryValueLabel{"0 %"};
 
-    QLabel lightSignalsLabel{"Light signals:"};
+    QLabel lightSignalsLabel{"Light Signals:"};
     QCheckBox leftCheckBox{"Left"};
     QCheckBox rightCheckBox{"Right"};
     QCheckBox warningCheckBox{"Warning"};

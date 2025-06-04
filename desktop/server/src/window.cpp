@@ -1,5 +1,5 @@
 #include "window.h"
-//#include "setting.h"
+// #include "setting.h"
 #include <QDebug>
 
 window::window()
@@ -9,6 +9,7 @@ window::window()
         slider.setOrientation(Qt::Horizontal);
         slider.setRange(min, max);
         slider.setValue(min);
+        slider.setFixedWidth(600); 
     };
 
     setupSlider(speedSlider, 0, 240);
@@ -46,9 +47,9 @@ window::window()
 
     setLayout(&layout);
     setWindowTitle("Server");
-    setFixedSize(1000, 200);
+    setFixedSize(800, 200);
 
-    setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
+    setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint | Qt::WindowStaysOnTopHint);
 
     connect(&speedSlider, &QSlider::valueChanged, this, &window::onSpeedChanged);
     connect(&tempSlider, &QSlider::valueChanged, this, &window::onTemperatureChanged);
@@ -60,8 +61,6 @@ window::window()
 }
 
 window::~window() {}
-
-
 
 void window::onSpeedChanged(int val)
 {
