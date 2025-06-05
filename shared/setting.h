@@ -8,7 +8,7 @@
     {{7, 8, -60, 60}, "temperature"}, \
     {{7, 15, 0, 100}, "battery"},     \
     {{1, 22, 0, 1}, "left_light"},    \
-    {{1, 23, 0, 1}, "right_light"},   \
+    {{1, 23, 0, 1}, "right_light"}    \
 }
 
 #define NUM_SIGNALS 5
@@ -28,11 +28,17 @@ namespace settings {
         int bit_offset;
         int min;
         int max;
+
+        constexpr signal_value(int bit_size, int bit_offset, int min, int max)
+        : bit_size(bit_size), bit_offset(bit_offset), min(min), max(max) {}
     };
 
     struct signal_type {
         signal_value value;
         const char* key;
+
+        constexpr signal_type(signal_value value, const char* key)
+        : value(value), key(key) {}
     };
 
     class Settings {
@@ -70,12 +76,12 @@ namespace settings {
         // Private constructor to prevent instantiation
         Settings() {
             // Initialize the signal map
-            for (int i = 0; i < NUM_SIGNALS; ++i) {
+            for (int i = 0; i < 3; ++i) {
                 signalMap.insert({signal_list[i].key, signal_list[i].value});
             }
         };
 
-        signal_type const signal_list[NUM_SIGNALS] = SIGNALS;
+        constexpr static signal_type signal_list[] = SIGNALS;
         std::map<const char*, const signal_value> signalMap;
            
     };
