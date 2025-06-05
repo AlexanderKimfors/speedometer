@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "qaudiooutput": "cpp",
+        "cmath": "cpp"
+    }
+}
