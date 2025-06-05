@@ -11,22 +11,13 @@
 
 class window : public QDialog
 {
-    Q_OBJECT
 
 public:
     window();
     virtual ~window();
 
-private slots:
-    void onSpeedChanged(int val);
-    void onTemperatureChanged(int val);
-    void onBatteryChanged(int val);
-
-    void onLeftChecked(bool checked);
-    void onRightChecked(bool checked);
-    void onWarningChecked(bool checked);
-
 private:
+
     QSlider speedSlider;
     QSlider tempSlider;
     QSlider batterySlider;
@@ -46,6 +37,19 @@ private:
     QCheckBox warningCheckBox{"Warning"};
 
     QVBoxLayout layout;
+
+    QHBoxLayout speedLayout;
+    QHBoxLayout tempLayout;
+    QHBoxLayout batteryLayout;
+    QHBoxLayout lightSignalsLayout;
+
+    void onSpeedChanged(int val);
+    void onTemperatureChanged(int val);
+    void onBatteryChanged(int val);
+
+    void onLeftChecked(bool checked);
+    void onRightChecked(bool checked);
+    void onWarningChecked(bool checked);
 };
 
 #endif // WINDOW_H
