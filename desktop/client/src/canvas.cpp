@@ -1,5 +1,13 @@
 #include "canvas.h"
 
+static void draw_center_point(QPainter &painter, int center_x, int center_y);
+static void draw_arc(QPainter &painter, QPen &pen, int thickness, int angle_span, QRect &rec);
+static void draw_lines(QPainter &painter, QPen &pen, int radius, int center_x, int center_y, int thickness, int tick_length);
+static void draw_text(QFont &font, QPainter &painter, QPen &pen, int thickness, int radius, int center_x, int center_y);
+static void draw_speed_line(QPainter &painter, QPen &pen, int thickness, int radius, int center_x, int center_y, int speed);
+static void draw_speed_text_icon(QFont &text_font, QFont &icon_font, QPainter &painter, int center_x, int center_y, int speed);
+static void draw_connection_error_text_icon(QFont &text_font, QFont &icon_font, QPainter &painter, int center_x, int center_y);
+
 Canvas::Canvas()
 {
     // Setup default pen and brush
@@ -11,7 +19,14 @@ Canvas::Canvas()
     text_font.setPointSize(12);
     icon_font.setPointSize(40);
 
-    setMinimumSize(800, 560); // Match your window size
+    setFixedSize(800, 560); // Match your window size
+
+    connect(&blink_timer, &QTimer::timeout, this, &Canvas::toggle_blink);
+    blink_timer.start(500);
+
+    connect(&draw_timer, &QTimer::timeout, this, [this]()
+            { this->update(); });
+    draw_timer.start(10);
 }
 
 void Canvas::paintEvent(QPaintEvent *event)
@@ -25,108 +40,12 @@ void Canvas::paintEvent(QPaintEvent *event)
     painter.setPen(pen);
     painter.setBrush(brush);
 
-    draw_speed();
-    draw_light();
     draw_temperature();
     draw_battery_level();
+    draw_speed();
+    draw_light();
 
     painter.end();
-}
-
-void Canvas::draw_speed()
-{
-    const int radius = 340;
-    const int thickness = 10;
-    const int center_x = width() / 2 - 50;
-    const int center_y = height() - 180; // position near bottom
-
-    QRectF outer_rect(center_x - radius, center_y - radius,
-                      2 * radius, 2 * radius);
-
-    // Set pen for arc thickness and color
-    QPen arc_pen(Qt::white, thickness);
-    painter.setPen(arc_pen);
-    painter.setBrush(Qt::NoBrush);
-
-    // Speed range (0–100 mapped to angle 0 to 180 degrees)
-    // int angle_start = 0 * 16;  // 0 degrees
-    int angle_span = 300 * 16; // 180 degrees
-
-    // Draw background arc
-    painter.drawArc(outer_rect, 240 * 16, -angle_span);
-
-    // Draw filled arc up to current speed
-    float speed_percent = qMin(speed / 100.0, 1.0); // Clamp between 0-1
-    int filled_span = -angle_span * speed_percent;
-
-    arc_pen.setColor(Qt::green);
-    painter.setPen(arc_pen);
-    painter.drawArc(outer_rect, 180 * 16, filled_span);
-
-    // Draw speed value in center
-    painter.setFont(text_font);
-    painter.setPen(pen);
-    painter.drawText(QRect(center_x - 50, center_y - 100, 100, 50),
-                     Qt::AlignCenter, QString("%1 km/h").arg(speed));
-
-    // Draw tick marks and labels (inside the arc)
-    painter.setPen(Qt::white);
-    painter.setFont(text_font);
-
-    const int tick_length = 10;
-    const int label_radius = radius - thickness - 20; // bring labels inside the arc
-    const int tick_radius_outer = radius - thickness / 2;
-    const int tick_radius_inner = tick_radius_outer - tick_length;
-
-    for (int i = 0; i <= 12; ++i)
-    {
-        int speed_value = i * 20;
-        float angle_deg = 205 - (300.0 / 12.0) * i; // from 240 to -60 degrees
-        float angle_rad = qDegreesToRadians(angle_deg);
-
-        // Tick line
-        QPointF outer(
-            center_x + tick_radius_outer * std::cos(angle_rad),
-            center_y - tick_radius_outer * std::sin(angle_rad));
-        QPointF inner(
-            center_x + tick_radius_inner * std::cos(angle_rad),
-            center_y - tick_radius_inner * std::sin(angle_rad));
-        painter.drawLine(inner, outer);
-
-        // Label position inside arc
-        QPointF label_point(
-            center_x + label_radius * std::cos(angle_rad) - 15,
-            center_y - label_radius * std::sin(angle_rad) + 5);
-        painter.drawText(QRectF(label_point, QSizeF(30, 15)),
-                         Qt::AlignCenter, QString::number(speed_value));
-    }
-}
-
-void Canvas::draw_light()
-{
-    icon_font.setPointSize(60);
-    painter.setFont(icon_font);
-
-    const int icon_width = 80;
-    const int icon_height = 80;
-    const int y = 30; // Vertical position of lights
-
-    // Left light
-    if (left_light)
-    {
-
-        QRect left_rect(40, y, icon_width, icon_height);
-        painter.setPen(Qt::green);
-        painter.drawText(left_rect, Qt::AlignCenter, QChar(0xe5c4)); // arrow_left
-    }
-
-    // Right light
-    if (right_light)
-    {
-        QRect right_rect(590, y, icon_width, icon_height);
-        painter.setPen(Qt::green);
-        painter.drawText(right_rect, Qt::AlignCenter, QChar(0xe5c8)); // arrow_right
-    }
 }
 
 void Canvas::draw_temperature()
@@ -169,6 +88,7 @@ void Canvas::draw_temperature()
 
     // Draw the temperature text with default pen
     painter.setFont(text_font);
+    pen.setColor(Qt::white);
     painter.setPen(pen); // reset to default pen before drawing text
     painter.drawText(text_rect, Qt::AlignCenter, QString("%1°C").arg(temperature));
 }
@@ -221,82 +141,260 @@ void Canvas::draw_battery_level()
     painter.drawText(text_rect, Qt::AlignCenter, QString("%1%").arg(battery_level));
 }
 
-// #include "canvas.h"
+void Canvas::draw_speed()
+{
+    const int radius = 300;
+    const int thickness = 10;
+    const int center_x = width() / 2 - 50;
+    const int center_y = height() - 200; // position near bottom
+    const int angle_span = 250 * 16;
+    const int tick_length = 20;
 
-// Canvas::Canvas()
-// {
-//     // Setup default pen and brush
-//     pen.setColor(Qt::white);
-//     pen.setWidth(2);
-//     brush.setColor(Qt::black);
-//     brush.setStyle(Qt::SolidPattern);
+    //-----------------------------skapar boxen för--------------------------------------
+    QRect outer_rect(center_x - radius, center_y - radius,
+                     2 * radius, 2 * radius);
+    //-----------------------------------------------------------------------------------
 
-//     text_font.setPointSize(12);
-//     icon_font.setPointSize(40);
+    //----------------------Målar den vita circeln i mitten------------------------------
+    draw_center_point(painter, center_x, center_y);
+    //-----------------------------------------------------------------------------------
 
-//     // Media setup (disabled if not needed)
-//     // media_player.setAudioOutput(&audio_output);
+    //-------------------------------målar bågen-----------------------------------------
+    draw_arc(painter, pen, thickness, angle_span, outer_rect);
+    //-----------------------------------------------------------------------------------
 
-//     // Optional: set fixed size or size policy
-//     setMinimumSize(200, 200);
-// }
+    // -----------------------Draw the lines in the arc----------------------------------
+    draw_lines(painter, pen, radius, center_x, center_y, thickness, tick_length);
+    //-----------------------------------------------------------------------------------
 
-// void Canvas::paintEvent(QPaintEvent *event)
-// {
-//     Q_UNUSED(event);
+    // ----------------------Draw the text of the speed----------------------------------
+    draw_text(text_font, painter, pen, thickness, radius, center_x, center_y);
+    //-----------------------------------------------------------------------------------
 
-//     painter.begin(this);
-//     painter.setRenderHint(QPainter::Antialiasing);
+    //----------------------Målar det röda sträcket för hastigheten----------------------
+    draw_speed_line(painter, pen, thickness, radius, center_x, center_y, speed);
+    //-----------------------------------------------------------------------------------
+    if (status)
+    {
+        draw_speed_text_icon(text_font, icon_font, painter, center_x, center_y, speed);
+    }
+    else
+    {
+        draw_connection_error_text_icon(text_font, icon_font, painter, center_x, center_y);
+    }
+}
 
-//     painter.setFont(text_font);
-//     painter.setPen(pen);
-//     painter.setBrush(brush);
+void Canvas::draw_light()
+{
+    icon_font.setPointSize(60);
+    painter.setFont(icon_font);
 
-//     draw_speed();
-//     draw_light();
-//     draw_temperature();
-//     draw_battery_level();
+    const int icon_width = 80;
+    const int icon_height = 80;
+    const int y = 30; // Vertical position of lights
 
-//     painter.end();
-// }
+    // Left light
+    if (left_light && blink_state)
+    {
 
-// void Canvas::draw_speed()
-// {
-//     QRect speed_rect(10, 10, 80, 30);
-//     painter.drawText(speed_rect, Qt::AlignLeft, QString("Speed: %1").arg(speed));
-// }
+        QRect left_rect(40, y, icon_width, icon_height);
+        painter.setPen(Qt::green);
+        painter.drawText(left_rect, Qt::AlignCenter, QChar(0xe5c4)); // arrow_left
+    }
 
-// void Canvas::draw_light()
-// {
-//     QRect left_rect(10, 50, 100, 30);
-//     QRect right_rect(110, 50, 100, 30);
+    // Right light
+    if (right_light && blink_state)
+    {
+        QRect right_rect(590, y, icon_width, icon_height);
+        painter.setPen(Qt::green);
+        painter.drawText(right_rect, Qt::AlignCenter, QChar(0xe5c8)); // arrow_right
+    }
+}
 
-//     painter.setPen(left_light ? Qt::yellow : Qt::gray);
-//     painter.drawText(left_rect, Qt::AlignLeft, "Left Light");
+void Canvas::toggle_blink()
+{
+    if (left_light || right_light)
+    {
+        blink_state = !blink_state;
+    }
+    else
+    {
+        blink_state = true; // Visa konstant om inget blinkar
+    }
+}
 
-//     painter.setPen(right_light ? Qt::yellow : Qt::gray);
-//     painter.drawText(right_rect, Qt::AlignLeft, "Right Light");
+static void draw_center_point(QPainter &painter, int center_x, int center_y)
+{
+    const int center_circle_radius = 20;
 
-//     painter.setPen(pen); // reset
-// }
+    painter.setPen(QPen(Qt::white, 10));
+    painter.setBrush(QColor(139, 0, 0)); // Dark red
+    painter.drawEllipse(QPoint(center_x, center_y), center_circle_radius, center_circle_radius);
+}
 
-// void Canvas::draw_temperature()
-// {
-//     QRect temp_rect(10, 90, 120, 30);
-//     painter.drawText(temp_rect, Qt::AlignLeft, QString("Temp: %1°C").arg(temperature));
-// }
+static void draw_arc(QPainter &painter, QPen &pen, int thickness, int angle_span, QRect &rec)
+{
+    // Set pen for arc thickness and color
+    pen.setColor(Qt::white);
+    pen.setWidth(thickness);
+    painter.setPen(pen);
+    painter.setBrush(Qt::NoBrush);
 
-// void Canvas::draw_battery_level()
-// {
-//     QRect batt_rect(10, 130, 150, 30);
-//     QString text = QString("Battery: %1%").arg(battery_level);
+    // Speed range (0–100 mapped to angle 0 to 180 degrees)
+    // int angle_start = 0 * 16;  // 0 degrees
 
-//     painter.drawText(batt_rect, Qt::AlignLeft, text);
+    // Draw background arc
+    painter.drawArc(rec, 215 * 16, -angle_span); // start 240 grader, slut -60 grader
+}
 
-//     // Battery bar
-//     QRect bar_outer(170, 135, 60, 20);
-//     QRect bar_inner(170, 135, battery_level * 0.6, 20); // Scale to 60px width
+static void draw_lines(QPainter &painter, QPen &pen, int radius, int center_x, int center_y, int thickness, int tick_length)
+{
+    pen.setWidth(thickness - 6);
+    painter.setPen(pen);
 
-//     painter.drawRect(bar_outer);
-//     painter.fillRect(bar_inner, Qt::green);
-// }
+    const int tick_radius_outer = radius - (thickness / 2) - 10;
+    const int tick_radius_inner = tick_radius_outer - tick_length;
+
+    int speed_value;
+    float angle_deg;
+    float angle_rad;
+
+    // Paint the big lines for each 20km
+    for (int i = 0; i <= 12; ++i)
+    {
+        speed_value = i * 20;
+        angle_deg = 210 - speed_value; // from 240 to -60 degrees
+        angle_rad = qDegreesToRadians(angle_deg);
+
+        // Tick line
+        QPointF outer(
+            center_x + tick_radius_outer * std::cos(angle_rad),
+            center_y - tick_radius_outer * std::sin(angle_rad));
+        QPointF inner(
+            center_x + tick_radius_inner * std::cos(angle_rad),
+            center_y - tick_radius_inner * std::sin(angle_rad));
+        painter.drawLine(inner, outer);
+    }
+    // -----------------------------------------------------------------------
+
+    // Paint the lines for eatch 5km
+    pen.setWidth(thickness - 8);
+    painter.setPen(pen);
+
+    int minor_tick_radius_inner = tick_radius_outer - 6;
+
+    for (int i = 0; i <= 23; ++i)
+    {
+        speed_value = i * 10 + 5; // 5, 15, 25, ..., 235
+
+        angle_deg = 210 - speed_value;
+        angle_rad = qDegreesToRadians(angle_deg);
+
+        QPointF outer(
+            center_x + tick_radius_outer * std::cos(angle_rad),
+            center_y - tick_radius_outer * std::sin(angle_rad));
+        QPointF inner(
+            center_x + minor_tick_radius_inner * std::cos(angle_rad),
+            center_y - minor_tick_radius_inner * std::sin(angle_rad));
+        painter.drawLine(inner, outer);
+    }
+
+    // -----------------------------------------------------------------------
+
+    minor_tick_radius_inner = tick_radius_outer - 9;
+
+    // Paint the lines for eatch 10km
+    pen.setWidth(thickness - 7);
+    painter.setPen(pen);
+    for (int i = 0; i < 12; ++i)
+    {
+        int speed_value = (i * 20) + 10;
+        float angle_deg = 210 - speed_value; // from 240 to -60 degrees
+        float angle_rad = qDegreesToRadians(angle_deg);
+
+        // Tick line
+        QPointF outer(
+            center_x + tick_radius_outer * std::cos(angle_rad),
+            center_y - tick_radius_outer * std::sin(angle_rad));
+        QPointF inner(
+            center_x + minor_tick_radius_inner * std::cos(angle_rad),
+            center_y - minor_tick_radius_inner * std::sin(angle_rad));
+        painter.drawLine(inner, outer);
+    }
+}
+
+static void draw_text(QFont &font, QPainter &painter, QPen &pen, int thickness, int radius, int center_x, int center_y)
+{
+    font.setPointSize(18);
+    painter.setFont(font);
+    pen.setWidth(thickness - 6);
+    painter.setPen(pen);
+
+    const int label_radius = radius - thickness - 20;
+
+    for (int i = 0; i <= 12; ++i)
+    {
+        int speed_value = i * 20;
+        float angle_deg = 210 - speed_value; // from 240 to -60 degrees
+        float angle_rad = qDegreesToRadians(angle_deg);
+
+        QPointF label_point(
+            center_x + (label_radius - 30) * std::cos(angle_rad) - 23,
+            center_y - (label_radius - 30) * std::sin(angle_rad) - 10);
+        painter.drawText(QRectF(label_point, QSizeF(40, 20)),
+                         Qt::AlignCenter, QString::number(speed_value));
+    }
+}
+
+static void draw_speed_line(QPainter &painter, QPen &pen, int thickness, int radius, int center_x, int center_y, int speed)
+{
+    pen.setWidth(thickness - 6);
+    painter.setPen(pen);
+
+    const int tick_radius_outer = radius - (thickness / 2) - 10;
+
+    int minor_tick_radius_inner = tick_radius_outer - 45;
+
+    pen.setWidth(thickness - 7);
+    pen.setColor(QColor(139, 0, 0));
+    painter.setPen(pen);
+    for (int i = 0; i < 12; ++i)
+    {
+        float angle_deg = 210 - speed; // from 240 to -60 degrees
+        float angle_rad = qDegreesToRadians(angle_deg);
+
+        QPointF outer(
+            center_x + minor_tick_radius_inner * std::cos(angle_rad),
+            center_y - minor_tick_radius_inner * std::sin(angle_rad));
+        QPointF inner(
+            center_x,
+            center_y);
+        painter.drawLine(inner, outer);
+    }
+}
+
+static void draw_speed_text_icon(QFont &text_font, QFont &icon_font, QPainter &painter, int center_x, int center_y, int speed)
+{
+    painter.setFont(text_font);
+    painter.setPen(Qt::white);
+    QRect text_rec = QRect(center_x - 50, center_y + 130, 100, 20);
+    painter.drawText(text_rec, Qt::AlignCenter, QString("%1 km/h").arg(speed));
+
+    icon_font.setPointSize(40);
+    painter.setFont(icon_font);
+    QRect icon_rec = QRect(center_x - 50, center_y + 70, 100, 50);
+    painter.drawText(icon_rec, Qt::AlignCenter, QChar(0xe9e4));
+}
+
+static void draw_connection_error_text_icon(QFont &text_font, QFont &icon_font, QPainter &painter, int center_x, int center_y)
+{
+    painter.setFont(text_font);
+    painter.setPen(Qt::red);
+    QRect text_rec = QRect(center_x - 100, center_y + 130, 200, 20);
+    painter.drawText(text_rec, Qt::AlignCenter, QString("Connection Error"));
+
+    icon_font.setPointSize(40);
+    painter.setFont(icon_font);
+    QRect icon_rec = QRect(center_x - 50, center_y + 70, 100, 50);
+    painter.drawText(icon_rec, Qt::AlignCenter, QChar(0xe628));
+}
