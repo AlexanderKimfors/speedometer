@@ -1,3 +1,38 @@
+/**
+ * @file setting.h
+ * @brief 
+ * @version 0.1
+ * @date 2025-06-09
+ * 
+ * @copyright Copyright (c) 2025
+ * 
+ * 
+ * This file is part of the shared library for the project.
+ * It defines the Settings class, which provides access to signal values
+ * using a subscript operator. The signals are defined in the SIGNALS macro.
+ * The Settings class is a singleton, ensuring that only one instance exists
+ * throughout the application. The signal values are stored in a map for
+ * efficient access.    
+ * 
+ * how to use:
+ * ```cpp
+ * #include "setting.h"
+ * using namespace settings;
+ * Settings& settings = Settings::getInstance();
+ * const signal_value& speed = settings["speed"];
+ * std::cout << "Speed Bit Size: " << speed.bit_size << std::endl;
+ * ```
+ *  note: the key is case-sensitive, so "speed" and "Speed" are different keys.
+ * 
+ *  return value is a reference to the signal_value struct, which contains the following
+ * atributes:
+ * - bit_size: the size of the signal in bits   
+ * - bit_offset: the offset of the signal in bits
+ * - min: the minimum value of the signal
+ * - max: the maximum value of the signal
+ * 
+ */
+
 #ifndef SETTING_H
 #define SETTING_H
 
@@ -10,8 +45,6 @@
     {{1, 22, 0, 1}, "left_light"},    \
     {{1, 23, 0, 1}, "right_light"}    \
 }
-
-#define NUM_SIGNALS 5
 
 #define BUFFLEN 3
 #define BAUDRATE 1048576
@@ -76,9 +109,9 @@ namespace settings {
         // Private constructor to prevent instantiation
         Settings() {
             // Initialize the signal map
-            for (int i = 0; i < 3; ++i) {
-                signalMap.insert({signal_list[i].key, signal_list[i].value});
-            }
+            for (const auto& signal : signal_list) {
+                signalMap.insert({signal.key, signal.value});
+            }            
         };
 
         constexpr static signal_type signal_list[] = SIGNALS;
