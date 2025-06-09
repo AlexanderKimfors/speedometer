@@ -36,37 +36,34 @@ window::window()
     setupSlider(batterySlider, 0, 100);
 
     // Speed row
-    QHBoxLayout *speedLayout = new QHBoxLayout;
-    speedLayout->addWidget(&speedLabel);
-    speedLayout->addWidget(&speedSlider);
-    speedLayout->addWidget(&speedValueLabel);
-    layout.addLayout(speedLayout);
+    speedLayout.addWidget(&speedLabel);
+    speedLayout.addWidget(&speedSlider);
+    speedLayout.addWidget(&speedValueLabel);
+    layout.addLayout(&speedLayout);
+
 
     // Temperature row
-    QHBoxLayout *tempLayout = new QHBoxLayout;
-    tempLayout->addWidget(&tempLabel);
-    tempLayout->addWidget(&tempSlider);
-    tempLayout->addWidget(&tempValueLabel);
-    layout.addLayout(tempLayout);
+    tempLayout.addWidget(&tempLabel);
+    tempLayout.addWidget(&tempSlider);
+    tempLayout.addWidget(&tempValueLabel);
+    layout.addLayout(&tempLayout);
 
     // Battery row
-    QHBoxLayout *batteryLayout = new QHBoxLayout;
-    batteryLayout->addWidget(&batteryLabel);
-    batteryLayout->addWidget(&batterySlider);
-    batteryLayout->addWidget(&batteryValueLabel);
-    layout.addLayout(batteryLayout);
+    batteryLayout.addWidget(&batteryLabel);
+    batteryLayout.addWidget(&batterySlider);
+    batteryLayout.addWidget(&batteryValueLabel);
+    layout.addLayout(&batteryLayout);
 
     // Light signals row
-    QHBoxLayout *lightSignalsLayout = new QHBoxLayout;
-    lightSignalsLayout->addWidget(&lightSignalsLabel);
-    lightSignalsLayout->addWidget(&leftCheckBox);
-    lightSignalsLayout->addWidget(&rightCheckBox);
-    lightSignalsLayout->addWidget(&warningCheckBox);
-    layout.addLayout(lightSignalsLayout);
+    lightSignalsLayout.addWidget(&lightSignalsLabel);
+    lightSignalsLayout.addWidget(&leftCheckBox);
+    lightSignalsLayout.addWidget(&rightCheckBox);
+    lightSignalsLayout.addWidget(&warningCheckBox);
+    layout.addLayout(&lightSignalsLayout);
 
     setLayout(&layout);
     setWindowTitle("Server");
-    setFixedSize(800, 200);
+    setFixedSize(800, 150);
 
     setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint | Qt::WindowStaysOnTopHint);
 
@@ -101,13 +98,25 @@ void window::onBatteryChanged(int val)
 
 void window::onLeftChecked(bool checked)
 {
+    if (warningCheckBox.isChecked())
+    {
+        qDebug() << "Left signal ignored due to active warning.";
+
+        rightCheckBox.blockSignals(true);
+        rightCheckBox.setChecked(false);
+        rightCheckBox.setEnabled(true); 
+        rightCheckBox.blockSignals(false);
+        return;
+    }
+
     qDebug() << "Left signal" << (checked ? "checked" : "unchecked");
+
     if (checked)
     {
+        rightCheckBox.blockSignals(true);
         rightCheckBox.setChecked(false);
         rightCheckBox.setEnabled(false);
-        warningCheckBox.setChecked(false);
-        warningCheckBox.setEnabled(true);
+        rightCheckBox.blockSignals(false);
     }
     else
     {
@@ -117,13 +126,25 @@ void window::onLeftChecked(bool checked)
 
 void window::onRightChecked(bool checked)
 {
+    if (warningCheckBox.isChecked())
+    {
+        qDebug() << "Right signal ignored due to active warning.";
+
+        leftCheckBox.blockSignals(true);
+        leftCheckBox.setChecked(false);
+        leftCheckBox.setEnabled(true); 
+        leftCheckBox.blockSignals(false);
+        return;
+    }
+
     qDebug() << "Right signal" << (checked ? "checked" : "unchecked");
+
     if (checked)
     {
+        leftCheckBox.blockSignals(true);
         leftCheckBox.setChecked(false);
         leftCheckBox.setEnabled(false);
-        warningCheckBox.setChecked(false);
-        warningCheckBox.setEnabled(true);
+        leftCheckBox.blockSignals(false);
     }
     else
     {
@@ -134,5 +155,26 @@ void window::onRightChecked(bool checked)
 void window::onWarningChecked(bool checked)
 {
     qDebug() << "Warning signal" << (checked ? "checked" : "unchecked");
-    // No disabling of left or right checkboxes here
+
+    if (checked)
+    {
+        leftCheckBox.setEnabled(true);
+        rightCheckBox.setEnabled(true);
+    }
+    else
+    {
+        if (leftCheckBox.isChecked())
+        {
+            rightCheckBox.setEnabled(false);
+        }
+        else if (rightCheckBox.isChecked())
+        {
+            leftCheckBox.setEnabled(false);
+        }
+        else
+        {
+            leftCheckBox.setEnabled(true);
+            rightCheckBox.setEnabled(true);
+        }
+    }
 }
