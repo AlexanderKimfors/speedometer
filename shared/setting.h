@@ -22,6 +22,18 @@
  * const signal_value& speed = settings["speed"];
  * std::cout << "Speed Bit Size: " << speed.bit_size << std::endl;
  * ```
+ * 
+ * or 
+ * 
+ * ```cpp
+ * #include "setting.h"
+ * using namespace settings;
+ * Settings& settings = Settings::handle();
+ * 
+ * int update_speed_max(settings["speed"].max);
+ * std::cout << "Speed Max: " << update_speed_max << std::endl;
+ * ```
+ * 
  *  note: the key is case-sensitive, so "speed" and "Speed" are different keys.
  * 
  *  return value is a reference to the signal_value struct, which contains the following
@@ -55,6 +67,9 @@
 #include <map>
 
 namespace settings {
+
+    constexpr int INTERVAL{40};
+
     struct signal_value
         {
         int bit_size;
@@ -105,7 +120,12 @@ namespace settings {
         Settings(const Settings&) = delete;
         void operator=(const Settings&) = delete;
 
+        static Settings& handle() {
+            return getInstance();
+        } 
+
         private:
+        
         // Private constructor to prevent instantiation
         Settings() {
             // Initialize the signal map
