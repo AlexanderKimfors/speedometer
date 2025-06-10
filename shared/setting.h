@@ -65,6 +65,7 @@
 
 #include <string>
 #include <map>
+#include <stdexcept>
 
 namespace settings {
 
