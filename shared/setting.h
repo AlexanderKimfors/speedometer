@@ -72,7 +72,7 @@
  #include <map>
  #include <stdexcept>
  
- namespace settings {
+ namespace Settings {
  
      constexpr int INTERVAL{40};
  
