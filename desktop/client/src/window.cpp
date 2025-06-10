@@ -6,7 +6,7 @@ Window::Window(QWidget *parent)
     setFixedSize(800, 560);
     setStyleSheet("background-color: rgb(61, 36, 53);");
     setLayout(&mainLayout);
-    setWindowTitle("Material Icons Demo");
+    setWindowTitle("Client");
     mainLayout.addWidget(&canvas);
     canvas.set_temperature(39);
     canvas.set_battery_level(5);
