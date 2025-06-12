@@ -4,6 +4,7 @@
 class COMService
 {
 
+protected:
     // Enum för meddelandetyper
     enum class MessageType
     {
