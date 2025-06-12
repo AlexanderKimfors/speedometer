@@ -2,11 +2,8 @@
 #include "setting.h"
 #include <QDebug>
 
-
-
 window::window()
-{   
-
+{
     // Align labels and value labels
     speedLabel.setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     tempLabel.setAlignment(Qt::AlignRight | Qt::AlignVCenter);
@@ -56,7 +53,7 @@ window::window()
     layout.addLayout(&batteryLayout);
 
     // Light signals row
-    lightSignalsLayout.addWidget(&lightSignalsLabel);Settings::Signal &settings = Settings::Signal::getInstance();
+    lightSignalsLayout.addWidget(&lightSignalsLabel);
     lightSignalsLayout.addWidget(&leftCheckBox);
     lightSignalsLayout.addWidget(&rightCheckBox);
     lightSignalsLayout.addWidget(&warningCheckBox);
