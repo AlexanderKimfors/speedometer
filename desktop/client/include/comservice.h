@@ -1,12 +1,14 @@
 #ifndef COMSERVICE_H
 #define COMSERVICE_H
 
+#include <stdint.h>
+
 class COMService
 {
 
 protected:
     // Enum för meddelandetyper
-    enum class MessageType
+    enum class MessageType : int32_t
     {
         SPEED = 1,
         TEMPERATURE = 2,
@@ -17,7 +19,7 @@ protected:
     struct DataPacket
     {
         MessageType messageType;
-        int value;
+        int data;
     };
 
 public:
@@ -26,7 +28,7 @@ public:
 
     virtual bool sendData(const DataPacket &data) = 0;
 
-    virtual DataPacket receiveData() = 0;
+    virtual bool receiveData(DataPacket &data) = 0;
 
     virtual void disconnect() = 0;
 
