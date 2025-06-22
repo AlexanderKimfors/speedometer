@@ -72,8 +72,6 @@ void Canvas::drawBattery(QRect &icon_rect, QRect &text_rect)
 {
     painter.begin(this);
 
-    Q_UNUSED(text_rect);
-
     icon_font.setPointSize(90);
     painter.setFont(icon_font);
     painter.setPen("white");
