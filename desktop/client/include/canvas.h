@@ -10,7 +10,22 @@ Canvas uppgift är att vara widgeten som syns innanför window.
 class Canvas : public QWidget
 {
 private:
+    QPainter painter;
+    QFont icon_font{"Material Icons"};
+    QFont text_font{"Arial"};
+
+    int temperature{40};
+    int battery{40};
+
+    void paintEvent(QPaintEvent *event) override;
+    void drawTemperature(QRect &icon_rect, QRect &text_rect);
+    void drawBattery(QRect &icon_rect, QRect &text_rect);
+
 public:
+    Canvas(int width, int height)
+    {
+        setFixedSize(width, height);
+    }
 };
 
 #endif
