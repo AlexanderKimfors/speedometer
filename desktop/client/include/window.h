@@ -15,6 +15,7 @@ private:
     Canvas canvas;
 
 public:
+    Window();
 };
 
 #endif

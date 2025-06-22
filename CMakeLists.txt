@@ -9,7 +9,12 @@ add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
 
-add_executable(client desktop/client/main.cpp)
+add_executable(client
+    desktop/client/main.cpp
+    desktop/client/src/window.cpp
+    desktop/client/src/canvas.cpp
+)
+
 target_include_directories(client PRIVATE desktop/client/include)
 target_link_libraries(client PRIVATE Qt6::Widgets)
 
