@@ -14,7 +14,7 @@ private:
     QFont icon_font{"Material Icons"};
     QFont text_font{"Arial"};
 
-    int temperature{40};
+    int temperature{0};
     int battery{40};
 
     void paintEvent(QPaintEvent *event) override;
@@ -22,10 +22,7 @@ private:
     void drawBattery(QRect &icon_rect, QRect &text_rect);
 
 public:
-    Canvas(int width, int height)
-    {
-        setFixedSize(width, height);
-    }
+    Canvas();
 };
 
 #endif

@@ -1,39 +1,23 @@
 #include "canvas.h"
+#include "config.h"
+#include "positions.h"
+
+Canvas::Canvas()
+{
+    setFixedSize(Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT);
+}
 
 void Canvas::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
 
-    const int padding{20};
+    QRect temp_icon(Positions::TEMP_X, Positions::TEMP_Y, Positions::TEMP_WIDTH, Positions::TEMP_ICON_HEIGHT);
+    QRect temp_text(Positions::TEMP_X, Positions::TEMP_Y + Positions::TEMP_ICON_HEIGHT, Positions::TEMP_WIDTH, Positions::TEMP_TEXT_HEIGHT);
+    drawTemperature(temp_icon, temp_text);
 
-    //-------------------------------------Temperature-----------------------------------------
-    const int temp_width{55};
-    const int temp_icon_height{60};
-    const int temp_text_height{20};
-    int temp_x = width() - temp_width - padding;
-    int temp_y = height() - temp_icon_height - temp_text_height - padding;
-
-    QRect temp_icon_rect(temp_x, temp_y, temp_width, temp_icon_height);
-    QRect temp_text_rect(temp_x, temp_y + temp_icon_height, temp_width, temp_text_height);
-
-    drawTemperature(temp_icon_rect, temp_text_rect);
-
-    //------------------------------------------------------------------------------------------
-
-    //----------------------------------------Battery-------------------------------------------
-
-    const int battery_width{temp_width};
-    const int battery_icon_height{110};
-    const int battery_text_height{20};
-    int battery_x{temp_x};
-    int battery_y{temp_y - padding - battery_text_height - battery_icon_height};
-
-    QRect battery_icon_rect(battery_x, battery_y, battery_width, battery_icon_height);
-    QRect battery_text_rect(battery_x, battery_y + battery_icon_height, battery_width, battery_text_height);
-
-    drawBattery(battery_icon_rect, battery_text_rect);
-
-    //------------------------------------------------------------------------------------------
+    QRect battery_icon(Positions::BATTERY_X, Positions::BATTERY_Y, Positions::BATTERY_WIDTH, Positions::BATTERY_ICON_HEIGHT);
+    QRect battery_text(Positions::BATTERY_X, Positions::BATTERY_Y + Positions::BATTERY_ICON_HEIGHT, Positions::BATTERY_WIDTH, Positions::BATTERY_TEXT_HEIGHT);
+    drawBattery(battery_icon, battery_text);
 }
 
 void Canvas::drawTemperature(QRect &icon_rect, QRect &text_rect)
@@ -95,10 +79,10 @@ void Canvas::drawBattery(QRect &icon_rect, QRect &text_rect)
     int fill_height = icon_rect.height() * battery / 100;
     QRect fill_rect(icon_rect.left(), icon_rect.bottom() - fill_height, icon_rect.width(), fill_height);
 
-    painter.setClipRect(fill_rect);                              // Clip only the fill area
-    painter.setPen(fill_color);                                  // Colored pen
-    painter.drawText(icon_rect, Qt::AlignCenter, QChar(0xe1a3)); // Colored battery icon fill
-    painter.setClipping(false);                                  // Reset clip
+    painter.setClipRect(fill_rect);
+    painter.setPen(fill_color);
+    painter.drawText(icon_rect, Qt::AlignCenter, QChar(0xe1a3));
+    painter.setClipping(false);
 
     text_font.setPointSize(13);
     painter.setPen("white");

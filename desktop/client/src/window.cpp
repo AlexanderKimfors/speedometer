@@ -1,10 +1,11 @@
 #include "window.h"
+#include "config.h"
 
-Window::Window() : canvas(width, height)
+Window::Window()
 {
     mainLayout.addWidget(&canvas);
     setLayout(&mainLayout);
     setWindowTitle("Client");
-    setFixedSize(width, height);
+    setFixedSize(Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT);
     setStyleSheet("background-color: rgb(61, 36, 53);");
 }
