@@ -15,7 +15,7 @@ add_executable(client
     desktop/client/src/canvas.cpp
 )
 
-target_include_directories(client PRIVATE desktop/client/include shared)
+target_include_directories(client PRIVATE desktop/client/include)
 target_link_libraries(client PRIVATE Qt6::Widgets)
 
 if(NOT EXISTS "$ENV{HOME}/.local/share/fonts/MaterialIcons.ttf")

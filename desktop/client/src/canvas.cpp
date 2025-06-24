@@ -18,6 +18,8 @@ void Canvas::paintEvent(QPaintEvent *event)
     QRect battery_icon(Positions::BATTERY_X, Positions::BATTERY_Y, Positions::BATTERY_WIDTH, Positions::BATTERY_ICON_HEIGHT);
     QRect battery_text(Positions::BATTERY_X, Positions::BATTERY_Y + Positions::BATTERY_ICON_HEIGHT, Positions::BATTERY_WIDTH, Positions::BATTERY_TEXT_HEIGHT);
     drawBattery(battery_icon, battery_text);
+
+    drawSpeedometerCenterCirle();
 }
 
 void Canvas::drawTemperature(QRect &icon_rect, QRect &text_rect)
@@ -88,6 +90,21 @@ void Canvas::drawBattery(QRect &icon_rect, QRect &text_rect)
     painter.setPen("white");
     painter.setFont(text_font);
     painter.drawText(text_rect, Qt::AlignCenter, QString("%1 %").arg(battery));
+
+    painter.end();
+}
+
+void Canvas::drawSpeedometerCenterCirle(void)
+{
+    painter.begin(this);
+
+    painter.setRenderHint(QPainter::Antialiasing, true);
+
+    //--------------------------Center circle---------------------------------------
+    painter.setPen(QPen(Qt::white, 10));
+    painter.setBrush(QColor(139, 0, 0)); // Dark red
+    painter.drawEllipse(QPoint(Positions::SPEEDOMETER_CENTER_X, Positions::SPEEDOMETER_CENTER_Y), Positions::SPEEDOMETER_CENTER_CIRCLE_RADIUS, Positions::SPEEDOMETER_CENTER_CIRCLE_RADIUS);
+    //------------------------------------------------------------------------------
 
     painter.end();
 }

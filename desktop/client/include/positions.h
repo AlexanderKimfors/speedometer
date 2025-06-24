@@ -1,0 +1,29 @@
+#ifndef POSITIONS_H
+#define POSITIONS_H
+
+#include "config.h"
+
+namespace Positions
+{
+    inline constexpr int PADDING_RIGHT_SIDE{20};
+    inline constexpr int PADDING_SPEEDOMETER_TOP{160};
+    inline constexpr int RIGHT_SIDE_ICON_WIDTH{55};
+
+    inline constexpr int TEMP_WIDTH{RIGHT_SIDE_ICON_WIDTH};
+    inline constexpr int TEMP_ICON_HEIGHT{60};
+    inline constexpr int TEMP_TEXT_HEIGHT{20};
+    inline constexpr int TEMP_X = Config::WINDOW_WIDTH - TEMP_WIDTH - PADDING_RIGHT_SIDE;
+    inline constexpr int TEMP_Y = Config::WINDOW_HEIGHT - TEMP_ICON_HEIGHT - TEMP_TEXT_HEIGHT - PADDING_RIGHT_SIDE;
+
+    inline constexpr int BATTERY_WIDTH{RIGHT_SIDE_ICON_WIDTH};
+    inline constexpr int BATTERY_ICON_HEIGHT{110};
+    inline constexpr int BATTERY_TEXT_HEIGHT{20};
+    inline constexpr int BATTERY_X{TEMP_X};
+    inline constexpr int BATTERY_Y{TEMP_Y - PADDING_RIGHT_SIDE - BATTERY_TEXT_HEIGHT - BATTERY_ICON_HEIGHT};
+
+    inline constexpr int SPEEDOMETER_CENTER_X = (Config::WINDOW_WIDTH - RIGHT_SIDE_ICON_WIDTH - PADDING_RIGHT_SIDE) / 2;
+    inline constexpr int SPEEDOMETER_CENTER_Y = PADDING_SPEEDOMETER_TOP + ((Config::WINDOW_HEIGHT - PADDING_SPEEDOMETER_TOP) / 2);
+    inline constexpr int SPEEDOMETER_CENTER_CIRCLE_RADIUS{20};
+};
+
+#endif

@@ -20,6 +20,7 @@ private:
     void paintEvent(QPaintEvent *event) override;
     void drawTemperature(QRect &icon_rect, QRect &text_rect);
     void drawBattery(QRect &icon_rect, QRect &text_rect);
+    void drawSpeedometerCenterCirle(void);
 
 public:
     Canvas();
