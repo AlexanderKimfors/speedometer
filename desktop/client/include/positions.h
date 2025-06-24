@@ -29,6 +29,11 @@ namespace Positions
     inline constexpr int SPEEDOMETER_ARC_START_ANGLE{215};
     inline constexpr int SPEEDOMETER_ARC_THICKNESS{10};
     inline constexpr int SPEEDOMETER_ARC_RADIUS{300};
+
+    inline constexpr int SPEEDOMETER_LONG_LINES_TICK_LENGTH{20};
+    inline constexpr int SPEEDOMETER_LONG_LINES_THICHNESS{4};
+    inline constexpr int SPEEDOMETER_LONG_LINES_DISTANCE_FROM_ARC{10};
+    inline constexpr int SPEEDOMETER_LONG_LINE_ANGLE_OFFSET{5};
 };
 
 #endif
