@@ -11,20 +11,20 @@ void Canvas::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
 
-    QRect temp_icon(Positions::TEMP_X, Positions::TEMP_Y, Positions::TEMP_WIDTH, Positions::TEMP_ICON_HEIGHT);
-    QRect temp_text(Positions::TEMP_X, Positions::TEMP_Y + Positions::TEMP_ICON_HEIGHT, Positions::TEMP_WIDTH, Positions::TEMP_TEXT_HEIGHT);
-    drawTemperature(temp_icon, temp_text);
+    drawTemperature();
 
-    QRect battery_icon(Positions::BATTERY_X, Positions::BATTERY_Y, Positions::BATTERY_WIDTH, Positions::BATTERY_ICON_HEIGHT);
-    QRect battery_text(Positions::BATTERY_X, Positions::BATTERY_Y + Positions::BATTERY_ICON_HEIGHT, Positions::BATTERY_WIDTH, Positions::BATTERY_TEXT_HEIGHT);
-    drawBattery(battery_icon, battery_text);
+    drawBattery();
 
     drawSpeedometerCenterCirle();
+    drawSpeedometerArc();
 }
 
-void Canvas::drawTemperature(QRect &icon_rect, QRect &text_rect)
+void Canvas::drawTemperature(void)
 {
     painter.begin(this);
+
+    QRect icon_rect(Positions::TEMP_X, Positions::TEMP_Y, Positions::TEMP_WIDTH, Positions::TEMP_ICON_HEIGHT);
+    QRect text_rect(Positions::TEMP_X, Positions::TEMP_Y + Positions::TEMP_ICON_HEIGHT, Positions::TEMP_WIDTH, Positions::TEMP_TEXT_HEIGHT);
 
     QColor color;
     if (temperature < 5)
@@ -54,9 +54,12 @@ void Canvas::drawTemperature(QRect &icon_rect, QRect &text_rect)
     painter.end();
 }
 
-void Canvas::drawBattery(QRect &icon_rect, QRect &text_rect)
+void Canvas::drawBattery(void)
 {
     painter.begin(this);
+
+    QRect icon_rect(Positions::BATTERY_X, Positions::BATTERY_Y, Positions::BATTERY_WIDTH, Positions::BATTERY_ICON_HEIGHT);
+    QRect text_rect(Positions::BATTERY_X, Positions::BATTERY_Y + Positions::BATTERY_ICON_HEIGHT, Positions::BATTERY_WIDTH, Positions::BATTERY_TEXT_HEIGHT);
 
     icon_font.setPointSize(90);
     painter.setFont(icon_font);
@@ -105,6 +108,22 @@ void Canvas::drawSpeedometerCenterCirle(void)
     painter.setBrush(QColor(139, 0, 0)); // Dark red
     painter.drawEllipse(QPoint(Positions::SPEEDOMETER_CENTER_X, Positions::SPEEDOMETER_CENTER_Y), Positions::SPEEDOMETER_CENTER_CIRCLE_RADIUS, Positions::SPEEDOMETER_CENTER_CIRCLE_RADIUS);
     //------------------------------------------------------------------------------
+
+    painter.end();
+}
+
+void Canvas::drawSpeedometerArc(void)
+{
+    painter.begin(this);
+
+    QRect outer_rect(Positions::SPEEDOMETER_CENTER_X - Positions::SPEEDOMETER_ARC_RADIUS, Positions::SPEEDOMETER_CENTER_Y - Positions::SPEEDOMETER_ARC_RADIUS,
+                     2 * Positions::SPEEDOMETER_ARC_RADIUS, 2 * Positions::SPEEDOMETER_ARC_RADIUS);
+
+    painter.setRenderHint(QPainter::Antialiasing, true);
+
+    painter.setPen(QPen(Qt::white, Positions::SPEEDOMETER_ARC_THICKNESS));
+
+    painter.drawArc(outer_rect, Positions::SPEEDOMETER_ARC_START_ANGLE * 16, -(Positions::SPEEDOMETER_ARC_DEGREES_TO_DRAW * 16));
 
     painter.end();
 }

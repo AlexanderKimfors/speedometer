@@ -24,6 +24,11 @@ namespace Positions
     inline constexpr int SPEEDOMETER_CENTER_X = (Config::WINDOW_WIDTH - RIGHT_SIDE_ICON_WIDTH - PADDING_RIGHT_SIDE) / 2;
     inline constexpr int SPEEDOMETER_CENTER_Y = PADDING_SPEEDOMETER_TOP + ((Config::WINDOW_HEIGHT - PADDING_SPEEDOMETER_TOP) / 2);
     inline constexpr int SPEEDOMETER_CENTER_CIRCLE_RADIUS{20};
+
+    inline constexpr int SPEEDOMETER_ARC_DEGREES_TO_DRAW{250};
+    inline constexpr int SPEEDOMETER_ARC_START_ANGLE{215};
+    inline constexpr int SPEEDOMETER_ARC_THICKNESS{10};
+    inline constexpr int SPEEDOMETER_ARC_RADIUS{300};
 };
 
 #endif

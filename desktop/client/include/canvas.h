@@ -18,9 +18,10 @@ private:
     int battery{40};
 
     void paintEvent(QPaintEvent *event) override;
-    void drawTemperature(QRect &icon_rect, QRect &text_rect);
-    void drawBattery(QRect &icon_rect, QRect &text_rect);
+    void drawTemperature(void);
+    void drawBattery(void);
     void drawSpeedometerCenterCirle(void);
+    void drawSpeedometerArc(void);
 
 public:
     Canvas();
