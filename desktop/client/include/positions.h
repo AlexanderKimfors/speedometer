@@ -45,6 +45,13 @@ namespace Positions
     inline constexpr int SPEEDOMETER_SMALL_LINES_THICKNESS{2};
     inline constexpr int SPEEDOMETER_SMALL_LINES_TICK_LENGTH{6};
     inline constexpr int SPEEDOMETER_SMALL_LINES_END_RADIUS{Positions::SPEEDOMETER_LINES_START_RADIUS - Positions::SPEEDOMETER_SMALL_LINES_TICK_LENGTH};
-};
+
+    inline constexpr int SPEEDOMETER_LABEL_TEXT_SIZE{18};
+    inline constexpr int SPEEDOMETER_LABEL_OFFSET_FROM_ARC{20};
+    inline constexpr int SPEEDOMETER_LABEL_TEXT_WIDTH{40};
+    inline constexpr int SPEEDOMETER_LABEL_TEXT_HEIGHT{20};
+    inline constexpr int SPEEDOMETER_LABEL_INNER_PADDING_X{30};
+    inline constexpr int SPEEDOMETER_LABEL_INNER_PADDING_Y{30};
+}
 
 #endif

@@ -20,6 +20,7 @@ void Canvas::paintEvent(QPaintEvent *event)
     drawSpeedometerLongLines();
     drawSpeedometerMediumLines();
     drawSpeedometerSmallLines();
+    drawSpeedometerSpeedLabels();
 }
 
 void Canvas::drawTemperature(void)
@@ -144,7 +145,6 @@ void Canvas::drawSpeedometerLongLines(void)
         angle_deg = Positions::SPEEDOMETER_ARC_START_ANGLE - Positions::SPEEDOMETER_LINES_ANGLE_OFFSET - speed_value;
         angle_rad = qDegreesToRadians(angle_deg);
 
-        // Tick line
         QPointF outer(
             Positions::SPEEDOMETER_CENTER_X + Positions::SPEEDOMETER_LINES_START_RADIUS * std::cos(angle_rad),
             Positions::SPEEDOMETER_CENTER_Y - Positions::SPEEDOMETER_LINES_START_RADIUS * std::sin(angle_rad));
@@ -212,4 +212,35 @@ void Canvas::drawSpeedometerSmallLines(void)
             Positions::SPEEDOMETER_CENTER_Y - Positions::SPEEDOMETER_SMALL_LINES_END_RADIUS * std::sin(angle_rad));
         painter.drawLine(inner, outer);
     }
+
+    painter.end();
+}
+
+void Canvas::drawSpeedometerSpeedLabels(void)
+{
+    painter.begin(this);
+
+    text_font.setPointSize(Positions::SPEEDOMETER_LABEL_TEXT_SIZE);
+    painter.setFont(text_font);
+    painter.setPen(QPen(Qt::white));
+
+    const int label_radius = Positions::SPEEDOMETER_ARC_RADIUS - Positions::SPEEDOMETER_ARC_THICKNESS - Positions::SPEEDOMETER_LABEL_OFFSET_FROM_ARC;
+    const int lable_text_offset_x = Positions::SPEEDOMETER_LABEL_TEXT_WIDTH / 2;
+    const int lable_text_offset_y = Positions::SPEEDOMETER_LABEL_TEXT_HEIGHT / 2;
+
+    for (int i = 0; i <= 12; ++i)
+    {
+        int speed_value = i * 20;
+        float angle_deg = Positions::SPEEDOMETER_ARC_START_ANGLE - Positions::SPEEDOMETER_LINES_ANGLE_OFFSET - speed_value;
+        float angle_rad = qDegreesToRadians(angle_deg);
+
+        QPointF label_point(
+            Positions::SPEEDOMETER_CENTER_X + (label_radius - Positions::SPEEDOMETER_LABEL_INNER_PADDING_X) * std::cos(angle_rad) - lable_text_offset_x,
+            Positions::SPEEDOMETER_CENTER_Y - (label_radius - Positions::SPEEDOMETER_LABEL_INNER_PADDING_Y) * std::sin(angle_rad) - lable_text_offset_y);
+
+        painter.drawText(QRectF(label_point, QSizeF(Positions::SPEEDOMETER_LABEL_TEXT_WIDTH, Positions::SPEEDOMETER_LABEL_TEXT_HEIGHT)),
+                         Qt::AlignCenter, QString::number(speed_value));
+    }
+
+    painter.end();
 }
