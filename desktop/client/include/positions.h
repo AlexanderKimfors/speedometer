@@ -52,6 +52,14 @@ namespace Positions
     inline constexpr int SPEEDOMETER_LABEL_TEXT_HEIGHT{20};
     inline constexpr int SPEEDOMETER_LABEL_INNER_PADDING_X{30};
     inline constexpr int SPEEDOMETER_LABEL_INNER_PADDING_Y{30};
+
+    inline constexpr int SPEEDOMETER_NEEDLE_THICKNESS{6};
+    inline constexpr int SPEEDOMTER_NEEDLE_OFFSET_FROM_ARC{70};
+
+    inline constexpr int SPEEDOMETER_ICON_WIDTH{160};
+    inline constexpr int SPEEDOMETER_ICON_HIGHT{70};
+    inline constexpr int SPEEDOMETER_ICON_SIIZE{40};
+    inline constexpr int SPEEDOMETER_ICON_TEXT_SIIZE{16};
 }
 
 #endif

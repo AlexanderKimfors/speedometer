@@ -21,6 +21,16 @@ void Canvas::paintEvent(QPaintEvent *event)
     drawSpeedometerMediumLines();
     drawSpeedometerSmallLines();
     drawSpeedometerSpeedLabels();
+    drawSpeedometerNeedle();
+
+    if (connection_status)
+    {
+        drawSpeedomterIcon();
+    }
+    else
+    {
+        drawSpeedometerConnectionErrorIcon();
+    }
 }
 
 void Canvas::drawTemperature(void)
@@ -241,6 +251,93 @@ void Canvas::drawSpeedometerSpeedLabels(void)
         painter.drawText(QRectF(label_point, QSizeF(Positions::SPEEDOMETER_LABEL_TEXT_WIDTH, Positions::SPEEDOMETER_LABEL_TEXT_HEIGHT)),
                          Qt::AlignCenter, QString::number(speed_value));
     }
+
+    painter.end();
+}
+
+void Canvas::drawSpeedometerNeedle(void)
+{
+    painter.begin(this);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+
+    painter.setPen(QPen(QColor(139, 0, 0), Positions::SPEEDOMETER_NEEDLE_THICKNESS));
+
+    const int needle_length = Positions::SPEEDOMETER_ARC_RADIUS - (Positions::SPEEDOMETER_ARC_THICKNESS / 2) - Positions::SPEEDOMTER_NEEDLE_OFFSET_FROM_ARC;
+
+    for (int i = 0; i < 12; ++i)
+    {
+        float angle_deg = Positions::SPEEDOMETER_ARC_START_ANGLE - Positions::SPEEDOMETER_LINES_ANGLE_OFFSET - speed;
+        float angle_rad = qDegreesToRadians(angle_deg);
+
+        QPointF outer(
+            Positions::SPEEDOMETER_CENTER_X + needle_length * std::cos(angle_rad),
+            Positions::SPEEDOMETER_CENTER_Y - needle_length * std::sin(angle_rad));
+        QPointF inner(
+            Positions::SPEEDOMETER_CENTER_X,
+            Positions::SPEEDOMETER_CENTER_Y);
+        painter.drawLine(inner, outer);
+    }
+
+    painter.end();
+}
+
+void Canvas::drawSpeedomterIcon(void)
+{
+    painter.begin(this);
+
+    icon_font.setPointSize(Positions::SPEEDOMETER_ICON_SIIZE);
+
+    painter.setFont(icon_font);
+    painter.setPen(Qt::white);
+
+    const int icon_x{Positions::SPEEDOMETER_CENTER_X - (Positions::SPEEDOMETER_ICON_WIDTH / 2)};
+    const int icon_y{Positions::SPEEDOMETER_CENTER_Y + (Positions::SPEEDOMETER_ARC_RADIUS / 2) - (Positions::SPEEDOMETER_ICON_HIGHT / 2) - Positions::SPEEDOMETER_LABEL_OFFSET_FROM_ARC - Positions::SPEEDOMETER_LABEL_TEXT_HEIGHT};
+
+    QRect icon_rec = QRect(icon_x, icon_y, Positions::SPEEDOMETER_ICON_WIDTH, Positions::SPEEDOMETER_ICON_HIGHT / 2);
+    painter.drawText(icon_rec, Qt::AlignCenter, QChar(0xe9e4));
+
+    text_font.setPointSize(Positions::SPEEDOMETER_ICON_TEXT_SIIZE);
+    painter.setFont(text_font);
+    QRect text_rec = QRect(icon_x, icon_y + (Positions::SPEEDOMETER_ICON_HIGHT / 2), Positions::SPEEDOMETER_ICON_WIDTH, Positions::SPEEDOMETER_ICON_HIGHT / 2);
+    painter.drawText(text_rec, Qt::AlignCenter, QString("%1 km/h").arg(speed));
+
+    painter.end();
+}
+
+#if 0
+void Canvas::drawSpeedometerConnectionErrorIcon(void)
+{
+    painter.setFont(text_font);
+    painter.setPen(Qt::red);
+    QRect text_rec = QRect(Positions::SPEEDOMETER_CENTER_X - 100, Positions::SPEEDOMETER_CENTER_Y + 130, 200, 20);
+    painter.drawText(text_rec, Qt::AlignCenter, QString("Connection Error"));
+
+    icon_font.setPointSize(40);
+    painter.setFont(icon_font);
+    QRect icon_rec = QRect(center_x - 50, center_y + 70, 100, 50);
+    painter.drawText(icon_rec, Qt::AlignCenter, QChar(0xe628));
+}
+#endif
+
+void Canvas::drawSpeedometerConnectionErrorIcon(void)
+{
+    painter.begin(this);
+
+    icon_font.setPointSize(Positions::SPEEDOMETER_ICON_SIIZE);
+
+    painter.setFont(icon_font);
+    painter.setPen(Qt::white);
+
+    const int icon_x{Positions::SPEEDOMETER_CENTER_X - (Positions::SPEEDOMETER_ICON_WIDTH / 2)};
+    const int icon_y{Positions::SPEEDOMETER_CENTER_Y + (Positions::SPEEDOMETER_ARC_RADIUS / 2) - (Positions::SPEEDOMETER_ICON_HIGHT / 2) - Positions::SPEEDOMETER_LABEL_OFFSET_FROM_ARC - Positions::SPEEDOMETER_LABEL_TEXT_HEIGHT};
+
+    QRect icon_rec = QRect(icon_x, icon_y, Positions::SPEEDOMETER_ICON_WIDTH, Positions::SPEEDOMETER_ICON_HIGHT / 2);
+    painter.drawText(icon_rec, Qt::AlignCenter, QChar(0xe628));
+
+    text_font.setPointSize(Positions::SPEEDOMETER_ICON_TEXT_SIIZE);
+    painter.setFont(text_font);
+    QRect text_rec = QRect(icon_x, icon_y + (Positions::SPEEDOMETER_ICON_HIGHT / 2), Positions::SPEEDOMETER_ICON_WIDTH, Positions::SPEEDOMETER_ICON_HIGHT / 2);
+    painter.drawText(text_rec, Qt::AlignCenter, QString("Connection Error"));
 
     painter.end();
 }

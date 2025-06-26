@@ -16,6 +16,8 @@ private:
 
     int temperature{0};
     int battery{40};
+    int speed{25};
+    bool connection_status{false};
 
     void paintEvent(QPaintEvent *event) override;
     void drawTemperature(void);
@@ -38,6 +40,9 @@ private:
      */
     void drawSpeedometerSmallLines(void);
     void drawSpeedometerSpeedLabels(void);
+    void drawSpeedometerNeedle(void);
+    void drawSpeedomterIcon(void);
+    void drawSpeedometerConnectionErrorIcon(void);
 
 public:
     Canvas();
