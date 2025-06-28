@@ -32,7 +32,7 @@ private:
     QLabel lightSignalsLabel{"Light Signals:"};
     QCheckBox leftCheckBox{"Left"};
     QCheckBox rightCheckBox{"Right"};
-    // QCheckBox warningCheckBox{"Warning"};
+    QCheckBox warningCheckBox{"Warning"};
 
     QVBoxLayout layout;
 
@@ -47,7 +47,7 @@ private:
 
     void onLeftChecked(bool checked);
     void onRightChecked(bool checked);
-    // void onWarningChecked(bool checked);
+    void onWarningChecked(bool checked);
 
     void setUpSpeed(int width);
     void setUpTemperature(int width);

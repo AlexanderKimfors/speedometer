@@ -85,11 +85,13 @@ void Window::setUpLightSignals(int width)
 
     lightSignalsLayout.addWidget(&leftCheckBox);
     lightSignalsLayout.addWidget(&rightCheckBox);
+    lightSignalsLayout.addWidget(&warningCheckBox);
 
     layout.addLayout(&lightSignalsLayout);
 
     connect(&leftCheckBox, &QCheckBox::toggled, this, &Window::onLeftChecked);
     connect(&rightCheckBox, &QCheckBox::toggled, this, &Window::onRightChecked);
+    connect(&warningCheckBox, &QCheckBox::toggled, this, &Window::onWarningChecked);
 }
 
 void Window::onSpeedChanged(int val)
@@ -116,10 +118,8 @@ void Window::onLeftChecked(bool checked)
 
     if (checked)
     {
-        rightCheckBox.blockSignals(true);
-        rightCheckBox.setChecked(false);
+
         rightCheckBox.setEnabled(false);
-        rightCheckBox.blockSignals(false);
     }
     else
     {
@@ -129,15 +129,11 @@ void Window::onLeftChecked(bool checked)
 
 void Window::onRightChecked(bool checked)
 {
-
     qDebug() << "Right signal" << (checked ? "checked" : "unchecked");
 
     if (checked)
     {
-        leftCheckBox.blockSignals(true);
-        leftCheckBox.setChecked(false);
         leftCheckBox.setEnabled(false);
-        leftCheckBox.blockSignals(false);
     }
     else
     {
@@ -145,77 +141,7 @@ void Window::onRightChecked(bool checked)
     }
 }
 
-#if 0 // warning
-void Window::onLeftChecked(bool checked)
-{
-    if (warningCheckBox.isChecked())
-    {
-        qDebug() << "Left signal ignored due to active warning.";
-
-        rightCheckBox.blockSignals(true);
-        rightCheckBox.setChecked(false);
-        rightCheckBox.setEnabled(true);
-        rightCheckBox.blockSignals(false);
-        return;
-    }
-
-    qDebug() << "Left signal" << (checked ? "checked" : "unchecked");
-
-    if (checked)
-    {
-        rightCheckBox.blockSignals(true);
-        rightCheckBox.setChecked(false);
-        rightCheckBox.setEnabled(false);
-        rightCheckBox.blockSignals(false);
-    }
-    else
-    {
-        rightCheckBox.setEnabled(true);
-    }
-}
-
-void window::onRightChecked(bool checked)
-{
-    if (warningCheckBox.isChecked())
-    {
-        qDebug() << "Right signal ignored due to active warning.";
-
-        leftCheckBox.blockSignals(true);
-        leftCheckBox.setChecked(false);
-        leftCheckBox.setEnabled(true);
-        leftCheckBox.blockSignals(false);
-        return;
-    }
-
-    qDebug() << "Right signal" << (checked ? "checked" : "unchecked");
-
-    if (checked)
-    {
-        leftCheckBox.blockSignals(true);
-        leftCheckBox.setChecked(false);
-        leftCheckBox.setEnabled(false);
-        leftCheckBox.blockSignals(false);
-    }
-    else
-    {
-        leftCheckBox.setEnabled(true);
-    }
-}
-
-#endif
-
-#if 0
-window::window()
-{
-    lightSignalsLayout.addWidget(&warningCheckBox);
-
-
-    
-    connect(&warningCheckBox, &QCheckBox::toggled, this, &window::onWarningChecked);
-}
-
-
-void window::onWarningChecked(bool checked)
+void Window::onWarningChecked(bool checked)
 {
     qDebug() << "Warning signal" << (checked ? "checked" : "unchecked");
 
@@ -241,4 +167,3 @@ void window::onWarningChecked(bool checked)
         }
     }
 }
-#endif
