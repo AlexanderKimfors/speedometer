@@ -29,9 +29,9 @@ private:
     QLabel batteryLabel{"Battery Level:"};
     QLabel batteryValueLabel{"0 %"};
 
-    // QLabel lightSignalsLabel{"Light Signals:"};
-    // QCheckBox leftCheckBox{"Left"};
-    // QCheckBox rightCheckBox{"Right"};
+    QLabel lightSignalsLabel{"Light Signals:"};
+    QCheckBox leftCheckBox{"Left"};
+    QCheckBox rightCheckBox{"Right"};
     // QCheckBox warningCheckBox{"Warning"};
 
     QVBoxLayout layout;
@@ -39,19 +39,20 @@ private:
     QHBoxLayout speedLayout;
     QHBoxLayout tempLayout;
     QHBoxLayout batteryLayout;
-    // QHBoxLayout lightSignalsLayout;
+    QHBoxLayout lightSignalsLayout;
 
-    // void onSpeedChanged(int val);
-    // void onTemperatureChanged(int val);
-    // void onBatteryChanged(int val);
+    void onSpeedChanged(int val);
+    void onTemperatureChanged(int val);
+    void onBatteryChanged(int val);
 
-    // void onLeftChecked(bool checked);
-    // void onRightChecked(bool checked);
+    void onLeftChecked(bool checked);
+    void onRightChecked(bool checked);
     // void onWarningChecked(bool checked);
 
     void setUpSpeed(int width);
     void setUpTemperature(int width);
     void setUpBattery(int width);
+    void setUpLightSignals(int width);
 };
 
 #endif

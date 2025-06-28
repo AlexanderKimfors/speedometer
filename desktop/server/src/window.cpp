@@ -11,10 +11,13 @@ Window::Window()
     setUpSpeed(maxLabelWidth);
     setUpTemperature(maxLabelWidth);
     setUpBattery(maxLabelWidth);
+    setUpLightSignals(maxLabelWidth);
 
     setLayout(&layout);
     setWindowTitle("Server");
     setFixedSize(Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT);
+
+    // setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint | Qt::WindowStaysOnTopHint);
 }
 
 void Window::setUpSpeed(int width)
@@ -33,6 +36,8 @@ void Window::setUpSpeed(int width)
 
     speedValueLabel.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     speedLayout.addWidget(&speedValueLabel);
+
+    connect(&speedSlider, &QSlider::valueChanged, this, &Window::onSpeedChanged);
 }
 
 void Window::setUpTemperature(int width)
@@ -50,6 +55,8 @@ void Window::setUpTemperature(int width)
 
     tempValueLabel.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     tempLayout.addWidget(&tempValueLabel);
+
+    connect(&tempSlider, &QSlider::valueChanged, this, &Window::onTemperatureChanged);
 }
 
 void Window::setUpBattery(int width)
@@ -67,98 +74,79 @@ void Window::setUpBattery(int width)
 
     batteryValueLabel.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     batteryLayout.addWidget(&batteryValueLabel);
+
+    connect(&batterySlider, &QSlider::valueChanged, this, &Window::onBatteryChanged);
 }
-#if 0
-window::window()
+
+void Window::setUpLightSignals(int width)
 {
-    // Align labels and value labels
-    speedLabel.setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    tempLabel.setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    batteryLabel.setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-
-    speedValueLabel.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-    tempValueLabel.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-    batteryValueLabel.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-
-    int maxLabelWidth = qMax(speedLabel.sizeHint().width(),
-                             qMax(tempLabel.sizeHint().width(), batteryLabel.sizeHint().width()));
-
-    speedLabel.setFixedWidth(maxLabelWidth);
-    tempLabel.setFixedWidth(maxLabelWidth);
-    batteryLabel.setFixedWidth(maxLabelWidth);
-    lightSignalsLabel.setFixedWidth(maxLabelWidth);
-
-    auto setupSlider = [](QSlider &slider, int min, int max)
-    {
-        slider.setOrientation(Qt::Horizontal);
-        slider.setRange(min, max);
-        slider.setValue(min);
-        slider.setFixedWidth(600);
-    };
-
-    setupSlider(speedSlider, 0, 240);
-    setupSlider(tempSlider, -60, 60);
-    setupSlider(batterySlider, 0, 100);
-
-    // Speed row
-    speedLayout.addWidget(&speedLabel);
-    speedLayout.addWidget(&speedSlider);
-    speedLayout.addWidget(&speedValueLabel);
-    layout.addLayout(&speedLayout);
-
-    // Temperature row
-    tempLayout.addWidget(&tempLabel);
-    tempLayout.addWidget(&tempSlider);
-    tempLayout.addWidget(&tempValueLabel);
-    layout.addLayout(&tempLayout);
-
-    // Battery row
-    batteryLayout.addWidget(&batteryLabel);
-    batteryLayout.addWidget(&batterySlider);
-    batteryLayout.addWidget(&batteryValueLabel);
-    layout.addLayout(&batteryLayout);
-
-    // Light signals row
+    lightSignalsLabel.setFixedWidth(width);
     lightSignalsLayout.addWidget(&lightSignalsLabel);
+
     lightSignalsLayout.addWidget(&leftCheckBox);
     lightSignalsLayout.addWidget(&rightCheckBox);
-    lightSignalsLayout.addWidget(&warningCheckBox);
+
     layout.addLayout(&lightSignalsLayout);
 
-    setLayout(&layout);
-    setWindowTitle("Server");
-    setFixedSize(800, 150);
-
-    setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint | Qt::WindowStaysOnTopHint);
-
-    connect(&speedSlider, &QSlider::valueChanged, this, &window::onSpeedChanged);
-    connect(&tempSlider, &QSlider::valueChanged, this, &window::onTemperatureChanged);
-    connect(&batterySlider, &QSlider::valueChanged, this, &window::onBatteryChanged);
-
-    connect(&leftCheckBox, &QCheckBox::toggled, this, &window::onLeftChecked);
-    connect(&rightCheckBox, &QCheckBox::toggled, this, &window::onRightChecked);
-    connect(&warningCheckBox, &QCheckBox::toggled, this, &window::onWarningChecked);
+    connect(&leftCheckBox, &QCheckBox::toggled, this, &Window::onLeftChecked);
+    connect(&rightCheckBox, &QCheckBox::toggled, this, &Window::onRightChecked);
 }
 
-void window::onSpeedChanged(int val)
+void Window::onSpeedChanged(int val)
 {
     speedValueLabel.setText(QString("%1 km/h").arg(val));
     qDebug() << "Speed changed:" << val << "km/h";
 }
 
-void window::onTemperatureChanged(int val)
+void Window::onTemperatureChanged(int val)
 {
     tempValueLabel.setText(QString("%1 °C").arg(val));
     qDebug() << "Temperature changed:" << val << "°C";
 }
 
-void window::onBatteryChanged(int val)
+void Window::onBatteryChanged(int val)
 {
     batteryValueLabel.setText(QString("%1 %").arg(val));
     qDebug() << "Battery changed:" << val << "%";
 }
 
-void window::onLeftChecked(bool checked)
+void Window::onLeftChecked(bool checked)
+{
+    qDebug() << "Left signal" << (checked ? "checked" : "unchecked");
+
+    if (checked)
+    {
+        rightCheckBox.blockSignals(true);
+        rightCheckBox.setChecked(false);
+        rightCheckBox.setEnabled(false);
+        rightCheckBox.blockSignals(false);
+    }
+    else
+    {
+        rightCheckBox.setEnabled(true);
+    }
+}
+
+void Window::onRightChecked(bool checked)
+{
+
+    qDebug() << "Right signal" << (checked ? "checked" : "unchecked");
+
+    if (checked)
+    {
+        leftCheckBox.blockSignals(true);
+        leftCheckBox.setChecked(false);
+        leftCheckBox.setEnabled(false);
+        leftCheckBox.blockSignals(false);
+    }
+    else
+    {
+        leftCheckBox.setEnabled(true);
+    }
+}
+
+#if 0 // warning
+void Window::onLeftChecked(bool checked)
 {
     if (warningCheckBox.isChecked())
     {
@@ -213,6 +201,19 @@ void window::onRightChecked(bool checked)
         leftCheckBox.setEnabled(true);
     }
 }
+
+#endif
+
+#if 0
+window::window()
+{
+    lightSignalsLayout.addWidget(&warningCheckBox);
+
+
+    
+    connect(&warningCheckBox, &QCheckBox::toggled, this, &window::onWarningChecked);
+}
+
 
 void window::onWarningChecked(bool checked)
 {
