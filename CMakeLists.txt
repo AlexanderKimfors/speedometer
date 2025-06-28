@@ -13,10 +13,16 @@ add_executable(client
     desktop/client/main.cpp
     desktop/client/src/window.cpp
     desktop/client/src/canvas.cpp
-)
-
+    )
 target_include_directories(client PRIVATE desktop/client/include)
 target_link_libraries(client PRIVATE Qt6::Widgets)
+
+add_executable(server
+    desktop/server/main.cpp
+    desktop/server/src/window.cpp
+    )
+target_include_directories(server PRIVATE desktop/server/include)
+target_link_libraries(server PRIVATE Qt6::Widgets)
 
 if(NOT EXISTS "$ENV{HOME}/.local/share/fonts/MaterialIcons.ttf")
     message(STATUS "Font saknas - installeras till: $ENV{HOME}/.local/share/fonts/")
