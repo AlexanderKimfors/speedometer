@@ -16,8 +16,6 @@ Window::Window()
     setLayout(&layout);
     setWindowTitle("Server");
     setFixedSize(Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT);
-
-    // setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint | Qt::WindowStaysOnTopHint);
 }
 
 void Window::setUpSpeed(int width)
