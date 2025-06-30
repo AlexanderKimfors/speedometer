@@ -29,7 +29,7 @@ void Window::setUpSpeed(int width)
     speedSlider.setOrientation(Qt::Horizontal);
     speedSlider.setRange(Settings::Signal::getInstance()["speed"].min, Settings::Signal::getInstance()["speed"].max);
     speedSlider.setValue(0);
-    speedSlider.setFixedWidth(600);
+    speedSlider.setFixedWidth(Config::SLIDER_WIDTH);
     speedLayout.addWidget(&speedSlider);
 
     speedValueLabel.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
@@ -48,7 +48,7 @@ void Window::setUpTemperature(int width)
     tempSlider.setOrientation(Qt::Horizontal);
     tempSlider.setRange(Settings::Signal::getInstance()["temperature"].min, Settings::Signal::getInstance()["temperature"].max);
     tempSlider.setValue(0);
-    tempSlider.setFixedWidth(600);
+    tempSlider.setFixedWidth(Config::SLIDER_WIDTH);
     tempLayout.addWidget(&tempSlider);
 
     tempValueLabel.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
@@ -67,7 +67,7 @@ void Window::setUpBattery(int width)
     batterySlider.setOrientation(Qt::Horizontal);
     batterySlider.setRange(Settings::Signal::getInstance()["battery"].min, Settings::Signal::getInstance()["battery"].max);
     batterySlider.setValue(0);
-    batterySlider.setFixedWidth(600);
+    batterySlider.setFixedWidth(Config::SLIDER_WIDTH);
     batteryLayout.addWidget(&batterySlider);
 
     batteryValueLabel.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
