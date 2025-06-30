@@ -20,7 +20,6 @@ Window::Window()
 
 void Window::setUpSpeed(int width)
 {
-
     speedLabel.setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     speedLabel.setFixedWidth(width);
     speedLayout.addWidget(&speedLabel);
