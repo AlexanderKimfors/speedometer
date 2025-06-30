@@ -1,5 +1,5 @@
 #include "window.h"
-// #include "setting.h"
+#include "settings.h"
 #include <QDebug>
 #include "config.h"
 
@@ -27,7 +27,7 @@ void Window::setUpSpeed(int width)
     layout.addLayout(&speedLayout);
 
     speedSlider.setOrientation(Qt::Horizontal);
-    speedSlider.setRange(0, 240);
+    speedSlider.setRange(Settings::Signal::getInstance()["speed"].min, Settings::Signal::getInstance()["speed"].max);
     speedSlider.setValue(0);
     speedSlider.setFixedWidth(600);
     speedLayout.addWidget(&speedSlider);
@@ -46,7 +46,7 @@ void Window::setUpTemperature(int width)
     layout.addLayout(&tempLayout);
 
     tempSlider.setOrientation(Qt::Horizontal);
-    tempSlider.setRange(-60, 60);
+    tempSlider.setRange(Settings::Signal::getInstance()["temperature"].min, Settings::Signal::getInstance()["temperature"].max);
     tempSlider.setValue(0);
     tempSlider.setFixedWidth(600);
     tempLayout.addWidget(&tempSlider);
@@ -65,7 +65,7 @@ void Window::setUpBattery(int width)
     layout.addLayout(&batteryLayout);
 
     batterySlider.setOrientation(Qt::Horizontal);
-    batterySlider.setRange(0, 100);
+    batterySlider.setRange(Settings::Signal::getInstance()["battery"].min, Settings::Signal::getInstance()["battery"].max);
     batterySlider.setValue(0);
     batterySlider.setFixedWidth(600);
     batteryLayout.addWidget(&batterySlider);

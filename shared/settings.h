@@ -1,5 +1,5 @@
-#ifndef SETTING_H
-#define SETTING_H
+#ifndef SETTINGS_H
+#define SETTINGS_H
 
 // overload subscript
 // value, key
