@@ -13,8 +13,9 @@ add_executable(client
     desktop/client/main.cpp
     desktop/client/src/window.cpp
     desktop/client/src/canvas.cpp
+    desktop/client/src/comservice.cpp
     )
-target_include_directories(client PRIVATE desktop/client/include)
+target_include_directories(client PRIVATE desktop/client/include shared)
 target_link_libraries(client PRIVATE Qt6::Widgets)
 
 add_executable(server
