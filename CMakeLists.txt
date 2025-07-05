@@ -21,6 +21,7 @@ target_link_libraries(client PRIVATE Qt6::Widgets)
 add_executable(server
     desktop/server/main.cpp
     desktop/server/src/window.cpp
+    desktop/server/src/comservice.cpp
     )
 target_include_directories(server PRIVATE desktop/server/include shared)
 target_link_libraries(server PRIVATE Qt6::Widgets)
