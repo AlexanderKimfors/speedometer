@@ -8,14 +8,16 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QCheckBox>
-
+#include "comservice.h"
 class Window : public QDialog
 {
 
 public:
-    Window();
+    Window(COMService *_service);
 
 private:
+    COMService *service;
+
     QSlider speedSlider;
     QSlider tempSlider;
     QSlider batterySlider;

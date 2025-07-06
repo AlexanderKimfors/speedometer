@@ -3,7 +3,7 @@
 #include <QDebug>
 #include "config.h"
 
-Window::Window()
+Window::Window(COMService *_service) : service{_service}
 {
     int maxLabelWidth = qMax(speedLabel.sizeHint().width(),
                              qMax(tempLabel.sizeHint().width(), batteryLabel.sizeHint().width()));
@@ -93,18 +93,21 @@ void Window::setUpLightSignals(int width)
 
 void Window::onSpeedChanged(int val)
 {
+    service->set_speed(val);
     speedValueLabel.setText(QString("%1 km/h").arg(val));
     qDebug() << "Speed changed:" << val << "km/h";
 }
 
 void Window::onTemperatureChanged(int val)
 {
+    service->set_temperature(val);
     tempValueLabel.setText(QString("%1 °C").arg(val));
     qDebug() << "Temperature changed:" << val << "°C";
 }
 
 void Window::onBatteryChanged(int val)
 {
+    service->set_battery(val);
     batteryValueLabel.setText(QString("%1 %").arg(val));
     qDebug() << "Battery changed:" << val << "%";
 }

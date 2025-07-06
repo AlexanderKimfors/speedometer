@@ -2,7 +2,7 @@
 #include "config.h"
 #include "positions.h"
 
-Canvas::Canvas()
+Canvas::Canvas(COMService *_service) : service{_service}
 {
     setFixedSize(Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT);
 }
@@ -23,7 +23,7 @@ void Canvas::paintEvent(QPaintEvent *event)
     drawSpeedometerSpeedLabels();
     drawSpeedometerNeedle();
 
-    if (comservice->get_connection_state())
+    if (service->get_connection_state())
     {
         drawSpeedomterIcon();
     }
@@ -42,7 +42,7 @@ void Canvas::drawTemperature(void)
 
     QColor color;
 
-    int temperature = comservice->get_temperature();
+    int temperature = service->get_temperature();
 
     if (temperature < 5)
     {
@@ -83,7 +83,7 @@ void Canvas::drawBattery(void)
     painter.setPen("white");
     painter.drawText(icon_rect, Qt::AlignCenter, QChar(0xe1a3));
 
-    int battery = comservice->get_battery();
+    int battery = service->get_battery();
 
     QColor fill_color;
     if (battery < 25)
@@ -269,19 +269,16 @@ void Canvas::drawSpeedometerNeedle(void)
 
     const int needle_length = Positions::SPEEDOMETER_ARC_RADIUS - (Positions::SPEEDOMETER_ARC_THICKNESS / 2) - Positions::SPEEDOMTER_NEEDLE_OFFSET_FROM_ARC;
 
-    for (int i = 0; i < 12; ++i)
-    {
-        float angle_deg = Positions::SPEEDOMETER_ARC_START_ANGLE - Positions::SPEEDOMETER_LINES_ANGLE_OFFSET - comservice->get_speed();
-        float angle_rad = qDegreesToRadians(angle_deg);
+    float angle_deg = Positions::SPEEDOMETER_ARC_START_ANGLE - Positions::SPEEDOMETER_LINES_ANGLE_OFFSET - service->get_speed();
+    float angle_rad = qDegreesToRadians(angle_deg);
 
-        QPointF outer(
-            Positions::SPEEDOMETER_CENTER_X + needle_length * std::cos(angle_rad),
-            Positions::SPEEDOMETER_CENTER_Y - needle_length * std::sin(angle_rad));
-        QPointF inner(
-            Positions::SPEEDOMETER_CENTER_X,
-            Positions::SPEEDOMETER_CENTER_Y);
-        painter.drawLine(inner, outer);
-    }
+    QPointF outer(
+        Positions::SPEEDOMETER_CENTER_X + needle_length * std::cos(angle_rad),
+        Positions::SPEEDOMETER_CENTER_Y - needle_length * std::sin(angle_rad));
+    QPointF inner(
+        Positions::SPEEDOMETER_CENTER_X,
+        Positions::SPEEDOMETER_CENTER_Y);
+    painter.drawLine(inner, outer);
 
     painter.end();
 }
@@ -304,7 +301,7 @@ void Canvas::drawSpeedomterIcon(void)
     text_font.setPointSize(Positions::SPEEDOMETER_ICON_TEXT_SIIZE);
     painter.setFont(text_font);
     QRect text_rec = QRect(icon_x, icon_y + (Positions::SPEEDOMETER_ICON_HIGHT / 2), Positions::SPEEDOMETER_ICON_WIDTH, Positions::SPEEDOMETER_ICON_HIGHT / 2);
-    painter.drawText(text_rec, Qt::AlignCenter, QString("%1 km/h").arg(comservice->get_speed()));
+    painter.drawText(text_rec, Qt::AlignCenter, QString("%1 km/h").arg(service->get_speed()));
 
     painter.end();
 }

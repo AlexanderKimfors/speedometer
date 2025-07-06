@@ -15,7 +15,7 @@ private:
     QFont icon_font{"Material Icons"};
     QFont text_font{"Arial"};
 
-    COMService *comservice;
+    COMService *service;
 
     void paintEvent(QPaintEvent *event) override;
     void drawTemperature(void);
@@ -43,7 +43,7 @@ private:
     void drawSpeedometerConnectionErrorIcon(void);
 
 public:
-    Canvas();
+    Canvas(COMService *_service);
 };
 
 #endif

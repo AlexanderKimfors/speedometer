@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <atomic>
+#include <thread>
 
 class TCPService : public COMService
 {
@@ -15,25 +16,8 @@ private:
     std::atomic<bool> end;
     std::thread worker_thread;
 
-    // Singelton
-    TCPService();
-
 public:
-    // Singelton, no copy
-    TCPService(const TCPService &) = delete;
-    TCPService &operator=(const TCPService &) = delete;
-
-    // Singelton, no move
-    TCPService(TCPService &&) = delete;
-    TCPService &operator=(TCPService &&) = delete;
-
-    // Singleton-access
-    static TCPService &getInstance()
-    {
-        static TCPService instance;
-        return instance;
-    }
-
+    TCPService();
     ~TCPService()
     {
         end = true;
@@ -49,3 +33,23 @@ public:
 };
 
 #endif
+
+/*
+SINGELTON
+
+
+    // Singelton, no copy
+    TCPService(const TCPService &) = delete;
+    TCPService &operator=(const TCPService &) = delete;
+
+    // Singelton, no move
+    TCPService(TCPService &&) = delete;
+    TCPService &operator=(TCPService &&) = delete;
+
+    // Singleton-access
+    static TCPService &getInstance()
+    {
+        static TCPService instance;
+        return instance;
+    }
+*/

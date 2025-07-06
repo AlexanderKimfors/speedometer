@@ -56,7 +56,7 @@ namespace Settings
     {
     private:
         static constexpr signal_type signal_list[] = SIGNALS;
-        std::map<const char *, const signal_value> signalMap;
+        std::map<std::string, const signal_value> signalMap;
 
         // Private constructor to prevent instantiation
         Signal()
@@ -86,7 +86,7 @@ namespace Settings
          * @param key the key of the signal
          * @return const signal_value&
          */
-        const signal_value &operator[](const char *key) const
+        const signal_value &operator[](const std::string &key) const
         {
             auto it = signalMap.find(key);
             if (it != signalMap.end())

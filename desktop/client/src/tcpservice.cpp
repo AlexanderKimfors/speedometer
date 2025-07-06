@@ -1,5 +1,4 @@
 #include "tcpservice.h"
-#include <thread>
 #include <iostream>
 #include <unistd.h>
 #include <cstring>
