@@ -16,6 +16,7 @@ protected:
     uint8_t buffer[Settings::Signal::BUFFER_SIZE]{};
     mutable std::mutex buffer_mutex;
 
+public:
     uint8_t get_speed(void);
     int8_t get_temperature(void);
     uint8_t get_battery(void);

@@ -6,6 +6,7 @@ Canvas uppgift är att vara widgeten som syns innanför window.
 
 #include <QWidget>
 #include <QPainter>
+#include "comservice.h"
 
 class Canvas : public QWidget
 {
@@ -13,6 +14,8 @@ private:
     QPainter painter;
     QFont icon_font{"Material Icons"};
     QFont text_font{"Arial"};
+
+    COMService &comservice;
 
     int temperature{0};
     int battery{40};

@@ -23,7 +23,7 @@ void Canvas::paintEvent(QPaintEvent *event)
     drawSpeedometerSpeedLabels();
     drawSpeedometerNeedle();
 
-    if (connection_status)
+    if (comservice.get_connection_state())
     {
         drawSpeedomterIcon();
     }
@@ -41,6 +41,9 @@ void Canvas::drawTemperature(void)
     QRect text_rect(Positions::TEMP_X, Positions::TEMP_Y + Positions::TEMP_ICON_HEIGHT, Positions::TEMP_WIDTH, Positions::TEMP_TEXT_HEIGHT);
 
     QColor color;
+
+    temperature = comservice.get_temperature();
+
     if (temperature < 5)
     {
         color = Qt::white;
@@ -79,6 +82,8 @@ void Canvas::drawBattery(void)
     painter.setFont(icon_font);
     painter.setPen("white");
     painter.drawText(icon_rect, Qt::AlignCenter, QChar(0xe1a3));
+
+    battery = comservice.get_battery();
 
     QColor fill_color;
     if (battery < 25)
@@ -266,7 +271,7 @@ void Canvas::drawSpeedometerNeedle(void)
 
     for (int i = 0; i < 12; ++i)
     {
-        float angle_deg = Positions::SPEEDOMETER_ARC_START_ANGLE - Positions::SPEEDOMETER_LINES_ANGLE_OFFSET - speed;
+        float angle_deg = Positions::SPEEDOMETER_ARC_START_ANGLE - Positions::SPEEDOMETER_LINES_ANGLE_OFFSET - comservice.get_speed();
         float angle_rad = qDegreesToRadians(angle_deg);
 
         QPointF outer(
