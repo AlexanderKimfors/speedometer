@@ -96,6 +96,11 @@ namespace Settings
             throw std::out_of_range("Signal key not found");
         }
     };
+
+    namespace Server
+    {
+        constexpr int PORT{8080};
+    }
 }
 #endif
 

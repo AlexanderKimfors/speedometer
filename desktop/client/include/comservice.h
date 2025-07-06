@@ -3,16 +3,19 @@
 
 #include <cstdint>
 #include "settings.h"
+#include <mutex>
 
 class COMService
 {
 private:
     Settings::Signal &signal{Settings::Signal::getInstance()};
-    uint8_t buffer[Settings::Signal::BUFFER_SIZE]{};
 
     uint8_t extract(const char *key);
 
 protected:
+    uint8_t buffer[Settings::Signal::BUFFER_SIZE]{};
+    mutable std::mutex buffer_mutex;
+
     uint8_t get_speed(void);
     int8_t get_temperature(void);
     uint8_t get_battery(void);
