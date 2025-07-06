@@ -17,11 +17,6 @@ private:
 
     COMService &comservice;
 
-    int temperature{0};
-    int battery{40};
-    int speed{25};
-    bool connection_status{false};
-
     void paintEvent(QPaintEvent *event) override;
     void drawTemperature(void);
     void drawBattery(void);

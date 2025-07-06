@@ -42,7 +42,7 @@ void Canvas::drawTemperature(void)
 
     QColor color;
 
-    temperature = comservice.get_temperature();
+    int temperature = comservice.get_temperature();
 
     if (temperature < 5)
     {
@@ -83,7 +83,7 @@ void Canvas::drawBattery(void)
     painter.setPen("white");
     painter.drawText(icon_rect, Qt::AlignCenter, QChar(0xe1a3));
 
-    battery = comservice.get_battery();
+    int battery = comservice.get_battery();
 
     QColor fill_color;
     if (battery < 25)
@@ -304,7 +304,7 @@ void Canvas::drawSpeedomterIcon(void)
     text_font.setPointSize(Positions::SPEEDOMETER_ICON_TEXT_SIIZE);
     painter.setFont(text_font);
     QRect text_rec = QRect(icon_x, icon_y + (Positions::SPEEDOMETER_ICON_HIGHT / 2), Positions::SPEEDOMETER_ICON_WIDTH, Positions::SPEEDOMETER_ICON_HIGHT / 2);
-    painter.drawText(text_rec, Qt::AlignCenter, QString("%1 km/h").arg(speed));
+    painter.drawText(text_rec, Qt::AlignCenter, QString("%1 km/h").arg(comservice.get_speed()));
 
     painter.end();
 }
