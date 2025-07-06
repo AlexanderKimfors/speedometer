@@ -15,7 +15,7 @@ private:
     QFont icon_font{"Material Icons"};
     QFont text_font{"Arial"};
 
-    COMService &comservice;
+    COMService *comservice;
 
     void paintEvent(QPaintEvent *event) override;
     void drawTemperature(void);
