@@ -116,6 +116,11 @@ void Window::onLeftChecked(bool checked)
 {
     qDebug() << "Left signal" << (checked ? "checked" : "unchecked");
 
+    if (!warningCheckBox.isChecked())
+    {
+        service->set_left_light(checked);
+    }
+
     if (checked)
     {
 
@@ -130,6 +135,11 @@ void Window::onLeftChecked(bool checked)
 void Window::onRightChecked(bool checked)
 {
     qDebug() << "Right signal" << (checked ? "checked" : "unchecked");
+
+    if (!warningCheckBox.isChecked())
+    {
+        service->set_right_light(checked);
+    }
 
     if (checked)
     {
@@ -147,23 +157,30 @@ void Window::onWarningChecked(bool checked)
 
     if (checked)
     {
-        leftCheckBox.setEnabled(true);
-        rightCheckBox.setEnabled(true);
+        service->set_left_light(true);
+        service->set_right_light(true);
     }
     else
     {
         if (leftCheckBox.isChecked())
         {
+            service->set_left_light(true);
             rightCheckBox.setEnabled(false);
         }
-        else if (rightCheckBox.isChecked())
+        else
         {
+            service->set_left_light(false);
+            rightCheckBox.setEnabled(true);
+        }
+        if (rightCheckBox.isChecked())
+        {
+            service->set_right_light(true);
             leftCheckBox.setEnabled(false);
         }
         else
         {
+            service->set_right_light(false);
             leftCheckBox.setEnabled(true);
-            rightCheckBox.setEnabled(true);
         }
     }
 }

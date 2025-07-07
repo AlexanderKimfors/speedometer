@@ -7,7 +7,7 @@ Canvas uppgift är att vara widgeten som syns innanför window.
 #include <QWidget>
 #include <QPainter>
 #include "comservice.h"
-
+#include <QTimer>
 class Canvas : public QWidget
 {
 private:
@@ -16,6 +16,10 @@ private:
     QFont text_font{"Arial"};
 
     COMService *service;
+
+    QTimer blink_timer;
+
+    bool blink_on{false};
 
     void paintEvent(QPaintEvent *event) override;
     void drawTemperature(void);
@@ -41,6 +45,10 @@ private:
     void drawSpeedometerNeedle(void);
     void drawSpeedomterIcon(void);
     void drawSpeedometerConnectionErrorIcon(void);
+
+    void drawTurnSignals(void);
+
+    void toggle_blink(void);
 
 public:
     Canvas(COMService *_service);

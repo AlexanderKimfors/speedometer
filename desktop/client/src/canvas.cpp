@@ -5,6 +5,8 @@
 Canvas::Canvas(COMService *_service) : service{_service}
 {
     setFixedSize(Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT);
+    connect(&blink_timer, &QTimer::timeout, this, &Canvas::toggle_blink);
+    blink_timer.start(500);
 }
 
 void Canvas::paintEvent(QPaintEvent *event)
@@ -22,6 +24,11 @@ void Canvas::paintEvent(QPaintEvent *event)
     drawSpeedometerSmallLines();
     drawSpeedometerSpeedLabels();
     drawSpeedometerNeedle();
+
+    if (blink_on)
+    {
+        drawTurnSignals();
+    }
 
     if (service->get_connection_state())
     {
@@ -306,21 +313,6 @@ void Canvas::drawSpeedomterIcon(void)
     painter.end();
 }
 
-#if 0
-void Canvas::drawSpeedometerConnectionErrorIcon(void)
-{
-    painter.setFont(text_font);
-    painter.setPen(Qt::red);
-    QRect text_rec = QRect(Positions::SPEEDOMETER_CENTER_X - 100, Positions::SPEEDOMETER_CENTER_Y + 130, 200, 20);
-    painter.drawText(text_rec, Qt::AlignCenter, QString("Connection Error"));
-
-    icon_font.setPointSize(40);
-    painter.setFont(icon_font);
-    QRect icon_rec = QRect(center_x - 50, center_y + 70, 100, 50);
-    painter.drawText(icon_rec, Qt::AlignCenter, QChar(0xe628));
-}
-#endif
-
 void Canvas::drawSpeedometerConnectionErrorIcon(void)
 {
     painter.begin(this);
@@ -342,4 +334,39 @@ void Canvas::drawSpeedometerConnectionErrorIcon(void)
     painter.drawText(text_rec, Qt::AlignCenter, QString("Connection Error"));
 
     painter.end();
+}
+
+void Canvas::drawTurnSignals(void)
+{
+    painter.begin(this);
+
+    icon_font.setPointSize(Positions::TURN_SIGNAL_ICON_SIZE);
+    painter.setFont(icon_font);
+    painter.setPen(Qt::green);
+
+    if (service->get_left_light())
+    {
+        QRect left_rect(40, 30, 80, 80);
+        painter.drawText(left_rect, Qt::AlignCenter, QChar(0xe5c4)); // arrow_left
+    }
+    if (service->get_right_light())
+    {
+        QRect right_rect(590, 30, 80, 80);
+        painter.drawText(right_rect, Qt::AlignCenter, QChar(0xe5c8)); // arrow_right
+    }
+
+    painter.end();
+}
+
+void Canvas::toggle_blink(void)
+{
+    if (blink_on)
+    {
+        blink_on = false;
+    }
+    else
+    {
+        blink_on = true;
+    }
+    update();
 }

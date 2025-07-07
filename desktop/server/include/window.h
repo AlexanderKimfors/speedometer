@@ -43,6 +43,10 @@ private:
     QHBoxLayout batteryLayout;
     QHBoxLayout lightSignalsLayout;
 
+    bool warning_light{false};
+    bool left_light{false};
+    bool right_light{false};
+
     void onSpeedChanged(int val);
     void onTemperatureChanged(int val);
     void onBatteryChanged(int val);

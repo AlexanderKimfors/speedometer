@@ -12,7 +12,8 @@ class Window : public QDialog
 private:
     QVBoxLayout mainLayout;
     Canvas canvas;
-    QTimer timer;
+    QTimer draw_timer;
+    QTimer blink_timer;
 
 public:
     Window(COMService *_service);

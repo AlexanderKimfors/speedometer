@@ -60,6 +60,8 @@ namespace Positions
     inline constexpr int SPEEDOMETER_ICON_HIGHT{70};
     inline constexpr int SPEEDOMETER_ICON_SIIZE{40};
     inline constexpr int SPEEDOMETER_ICON_TEXT_SIIZE{16};
+
+    inline constexpr int TURN_SIGNAL_ICON_SIZE{40};
 }
 
 #endif

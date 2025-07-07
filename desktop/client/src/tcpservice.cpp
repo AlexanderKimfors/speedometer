@@ -58,7 +58,6 @@ void TCPService::run()
             {
                 std::lock_guard<std::mutex> lock(buffer_mutex);
                 std::memcpy(buffer, temp_buffer, sizeof(buffer));
-                std::cout << "Received: " << (int)buffer[0] << (int)buffer[1] << (int)buffer[2] << (int)buffer[3] << std::endl;
             }
             std::this_thread::sleep_for(std::chrono::microseconds(20));
         }
