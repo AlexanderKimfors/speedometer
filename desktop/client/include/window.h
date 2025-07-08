@@ -13,7 +13,6 @@ private:
     QVBoxLayout mainLayout;
     Canvas canvas;
     QTimer draw_timer;
-    QTimer blink_timer;
 
 public:
     Window(COMService *_service);
