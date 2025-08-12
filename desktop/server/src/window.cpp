@@ -4,10 +4,12 @@
 
 window::window()
 {
+
     // Align labels and value labels
     speedLabel.setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     tempLabel.setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     batteryLabel.setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+
     speedValueLabel.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     tempValueLabel.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     batteryValueLabel.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
@@ -70,7 +72,6 @@ window::window()
 
     connect(&leftCheckBox, &QCheckBox::toggled, this, &window::onLeftChecked);
     connect(&rightCheckBox, &QCheckBox::toggled, this, &window::onRightChecked);
-    connect(&warningCheckBox, &QCheckBox::toggled, this, &window::onWarningChecked);
 }
 
 window::~window() {}
@@ -101,9 +102,8 @@ void window::onLeftChecked(bool checked)
 
         rightCheckBox.blockSignals(true);
         rightCheckBox.setChecked(false);
-        rightCheckBox.setEnabled(true);
+        rightCheckBox.setEnabled(false);
         rightCheckBox.blockSignals(false);
-        return;
     }
 
     qDebug() << "Left signal" << (checked ? "checked" : "unchecked");
@@ -129,9 +129,8 @@ void window::onRightChecked(bool checked)
 
         leftCheckBox.blockSignals(true);
         leftCheckBox.setChecked(false);
-        leftCheckBox.setEnabled(true);
+        leftCheckBox.setEnabled(false);
         leftCheckBox.blockSignals(false);
-        return;
     }
 
     qDebug() << "Right signal" << (checked ? "checked" : "unchecked");
@@ -149,29 +148,3 @@ void window::onRightChecked(bool checked)
     }
 }
 
-void window::onWarningChecked(bool checked)
-{
-    qDebug() << "Warning signal" << (checked ? "checked" : "unchecked");
-
-    if (checked)
-    {
-        leftCheckBox.setEnabled(true);
-        rightCheckBox.setEnabled(true);
-    }
-    else
-    {
-        if (leftCheckBox.isChecked())
-        {
-            rightCheckBox.setEnabled(false);
-        }
-        else if (rightCheckBox.isChecked())
-        {
-            leftCheckBox.setEnabled(false);
-        }
-        else
-        {
-            leftCheckBox.setEnabled(true);
-            rightCheckBox.setEnabled(true);
-        }
-    }
-}
