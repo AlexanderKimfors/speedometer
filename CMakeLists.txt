@@ -9,22 +9,26 @@ add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
 
-add_library(client_gui STATIC ./desktop/client/src/window.cpp ./desktop/client/src/canvas.cpp ./desktop/client/include/canvas.h ./desktop/client/include/window.h)
-target_include_directories(client_gui PRIVATE ./desktop/client/include ./shared)
-target_link_libraries(client_gui PRIVATE Qt6::Core Qt6::Widgets)
+add_executable(client 
+    desktop/client/main.cpp
+    desktop/client/src/window.cpp
+    desktop/client/src/canvas.cpp
+    desktop/client/src/comservice.cpp
+    desktop/client/src/tcpservice.cpp
+    )
+target_include_directories(client PRIVATE ./desktop/client/include, ./shared)
+target_link_libraries(client PRIVATE client_gui Qt6::Core Qt6::Widgets)
 
-add_executable(client_app desktop/client/main.cpp)
-target_include_directories(client_app PRIVATE ./desktop/client/include)
-target_link_libraries(client_app PRIVATE client_gui Qt6::Core Qt6::Widgets)
 
-add_library(server_gui STATIC ./desktop/server/include/window.h ./desktop/server/src/window.cpp)
 
-target_include_directories(server_gui PRIVATE ./desktop/server/include ./shared)
-target_link_libraries(server_gui PRIVATE Qt6::Core Qt6::Widgets)
-
-add_executable(server_app desktop/server/main.cpp)
-target_include_directories(server_app PRIVATE ./desktop/server/include)
-target_link_libraries(server_app PRIVATE server_gui Qt6::Core Qt6::Widgets)
+add_executable(server
+    desktop/server/main.cpp
+    desktop/server/src/window.cpp
+    desktop/server/src/comservice.cpp
+    desktop/server/src/tcpservice.cpp
+    )
+target_include_directories(server PRIVATE ./desktop/server/include, ./shared)
+target_link_libraries(server PRIVATE server_gui Qt6::Core Qt6::Widgets)
 
 
 #---------------------------------------------------------------------------------------------
