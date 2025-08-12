@@ -49,7 +49,6 @@ private:
 
     void onLeftChecked(bool checked);
     void onRightChecked(bool checked);
-    void onWarningChecked(bool checked);
 };
 
 #endif // WINDOW_H

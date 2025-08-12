@@ -3,90 +3,116 @@
 #include <iostream>
 #include <cstring>
 #include <unistd.h>
-#include <cctype>
+#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
 
-constexpr int MAX_LEN{32};
+constexpr int PORT = 12345;
+constexpr int MAX_LEN = 1024;
 
-TCPService::TCPService(int port)
-    : sockfd_(-1), connfd_(-1), port_(port)
-{
-    std::memset(&servaddr_, 0, sizeof(servaddr_));
-}
+TCPService::TCPService() : running(false) {}
 
 TCPService::~TCPService()
 {
-    if (connfd_ != -1)
-    {
-        shutdown(connfd_, SHUT_RDWR);
-        close(connfd_);
-    }
-
-    if (sockfd_ != -1)
-    {
-        shutdown(sockfd_, SHUT_RDWR);
-        close(sockfd_);
-    }
+    stop();
 }
 
 void TCPService::run()
 {
-    sockfd_ = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
-    if (sockfd_ == -1)
+    if (running)
+        return;
+
+    running = true;
+    serverThread = std::thread(&TCPService::serverLoop, this);
+}
+
+void TCPService::stop()
+{
+    running = false;
+
+    if (connfd != -1)
     {
-        std::cerr << "Failed to create the socket..." << std::endl;
+        shutdown(connfd, SHUT_RDWR);
+        close(connfd);
+        connfd = -1;
+    }
+
+    if (sockfd != -1)
+    {
+        shutdown(sockfd, SHUT_RDWR);
+        close(sockfd);
+        sockfd = -1;
+    }
+
+    if (serverThread.joinable())
+        serverThread.join();
+}
+
+void TCPService::serverLoop()
+{
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd == -1)
+    {
+        std::cerr << "Socket creation failed.\n";
         return;
     }
 
-    servaddr_.sin_family = AF_INET;
-    servaddr_.sin_port = htons(port_);
-    servaddr_.sin_addr.s_addr = htonl(INADDR_ANY);
+    sockaddr_in servaddr{};
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_port = htons(PORT);
+    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    if (bind(sockfd_, (sockaddr *)&servaddr_, sizeof(servaddr_)) != 0)
+    if (bind(sockfd, (sockaddr *)&servaddr, sizeof(servaddr)) != 0)
     {
-        std::cerr << "Failed to bind servaddr to the socket..." << std::endl;
+        std::cerr << "Bind failed.\n";
+        close(sockfd);
+        sockfd = -1;
         return;
     }
 
-    if (listen(sockfd_, 1) != 0)
+    if (listen(sockfd, 1) != 0)
     {
-        std::cerr << "Failed to listen to the port..." << std::endl;
+        std::cerr << "Listen failed.\n";
+        close(sockfd);
+        sockfd = -1;
         return;
     }
 
-    sockaddr_in cli{0};
+    sockaddr_in cli{};
     socklen_t len = sizeof(cli);
 
-    connfd_ = accept(sockfd_, (sockaddr *)&cli, &len);
-    if (connfd_ < 0)
+    std::cout << "Waiting for client connection...\n";
+    connfd = accept(sockfd, (sockaddr *)&cli, &len);
+    if (connfd < 0)
     {
-        std::cerr << "Failed to accept the connection..." << std::endl;
+        std::cerr << "Accept failed.\n";
         return;
     }
 
-    std::cout << "Server accepted the client..." << std::endl;
+    std::cout << "Client connected.\n";
 
-    while (true)
+    // Stay alive while server is running
+    while (running)
     {
-        char buffer[MAX_LEN + 1]{0};
+        // Wait or idle until something is sent via send()
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
 
-        ssize_t n = read(connfd_, buffer, MAX_LEN);
-        if (n <= 0)
-        {
-            std::cerr << "Failed to read or client disconnected." << std::endl;
-            break;
-        }
+    std::cout << "Server shutting down.\n";
+}
 
-        for (size_t i = 0; i < strlen(buffer); ++i)
-        {
-            buffer[i] = toupper(buffer[i]);
-        }
+void TCPService::send(const std::string &message)
+{
+    if (connfd == -1 || !running)
+        return;
 
-        if (write(connfd_, buffer, strlen(buffer)) != static_cast<ssize_t>(strlen(buffer)))
-        {
-            std::cerr << "Failed to write ..." << std::endl;
-            break;
-        }
+    char tempBuffer[MAX_LEN] = {0};
+    std::size_t len = std::min(message.size(), static_cast<std::size_t>(MAX_LEN - 1));
+    std::memcpy(tempBuffer, message.c_str(), len);
+
+    ssize_t bytesSent = write(connfd, tempBuffer, len);
+    if (bytesSent != (ssize_t)len)
+    {
+        std::cerr << "Failed to send message to client.\n";
     }
 }
