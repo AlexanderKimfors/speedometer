@@ -1,23 +1,29 @@
 #ifndef TCPSERVICE_H
-#define TCPSERVICE_H
-
-#include <cstdint>
-#include <netinet/in.h>
-
-class TcpClientService
+#define TCPSERVICE_H #include "comservice.h"
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <atomic>
+#include <thread>class TCPService : public COMService
 {
-public:
-    TcpClientService(void);
-    int32_t init(const char *ip_addr, uint16_t port);
-    int32_t connectToServer(void);
-    void closeConnection(void);
-
 private:
-    int32_t requestIntValue(const char *command);
-    bool requestBoolValue(const char *command);
+    int client_fd;
+    struct sockaddr_in server_address;
+    std::atomic<bool> connected;
+    std::atomic<bool> end;
+    std::thread worker_thread;
 
-    int sockfd;
-    struct sockaddr_in servaddr;
+public:
+    TCPService();
+    ~TCPService()
+    {
+        end = true;
+        if (worker_thread.joinable())
+        {
+            worker_thread.join();
+        }
+    }
+    bool connected_to_server();
+    void run() override;
+    bool get_connection_state() override;
 };
-
 #endif
