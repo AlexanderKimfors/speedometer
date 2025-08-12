@@ -9,16 +9,15 @@ add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
 
-add_executable(client 
+add_executable(client
     desktop/client/main.cpp
     desktop/client/src/window.cpp
     desktop/client/src/canvas.cpp
     desktop/client/src/comservice.cpp
     desktop/client/src/tcpservice.cpp
     )
-target_include_directories(client PRIVATE ./desktop/client/include, ./shared)
+target_include_directories(client PRIVATE ./desktop/client/include ./shared)
 target_link_libraries(client PRIVATE client_gui Qt6::Core Qt6::Widgets)
-
 
 
 add_executable(server
@@ -27,7 +26,7 @@ add_executable(server
     desktop/server/src/comservice.cpp
     desktop/server/src/tcpservice.cpp
     )
-target_include_directories(server PRIVATE ./desktop/server/include, ./shared)
+target_include_directories(server PRIVATE ./desktop/server/include ./shared)
 target_link_libraries(server PRIVATE server_gui Qt6::Core Qt6::Widgets)
 
 

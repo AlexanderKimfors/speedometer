@@ -3,7 +3,7 @@
 
 int main(int argc, char **argv)
 {
-    COMService *service{TCPService{}};
+    ComService *service{TCPService{}};
 
     QApplication app(argc, argv);
 

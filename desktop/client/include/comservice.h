@@ -10,7 +10,7 @@ class COMService
 private:
     Settings::Signal &signal{Settings::Signal::getInstance()};
 
-    uint8_t extract(const char *key);
+    uint8_t extract(int start_bit, int bit_length);
 
 protected:
     uint8_t buffer[BUFFLEN]{};
