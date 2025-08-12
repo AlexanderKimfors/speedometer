@@ -1,12 +1,14 @@
 #include "tcpservice.h"
 #include <iostream>
 #include <unistd.h>
-#include <cstring>TCPService::TCPService() : COMService(), connected{false}, end{false}
+#include <cstring>
+
+TCPService::TCPService() : COMService(), connected{false}, end{false}
 {
     std::cout << "Initializing tcp service\n";
     server_address.sin_family = AF_INET;
-    server_address.sin_port = htons(Settings::Server::PORT);
-    if (inet_pton(AF_INET, Setting::Server::IP_ADRESS, &server_address.sin_addr) <= 0)
+    server_address.sin_port = htons(settings::Server::PORT);
+    if (inet_pton(AF_INET, settings::Server::IP_ADRESS, &server_address.sin_addr) <= 0)
     {
         std::cerr << "Invalid address\n";
         exit(EXIT_FAILURE);

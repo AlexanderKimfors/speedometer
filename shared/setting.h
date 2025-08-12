@@ -97,7 +97,7 @@ namespace settings
         /**
          * @brief Get the singleton instance of Settings
          *
-         * @return Settings&
+         * @return Settings
          */
         static Settings &getInstance()
         {
@@ -146,7 +146,7 @@ namespace settings
     };
     namespace Server
     {
-        inline constexpr char *IP_ADRESS{"127.0.0.1"};
+        inline constexpr const char *IP_ADRESS{"127.0.0.1"};
         inline constexpr int PORT{8080};
     }
 }

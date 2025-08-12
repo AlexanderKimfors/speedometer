@@ -1,5 +1,4 @@
 #include "canvas.h"
-#include "config.h"
 #include "positions.h"
 
 Canvas::Canvas(COMService *_service) : service{_service}

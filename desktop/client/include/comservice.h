@@ -8,7 +8,7 @@
 class COMService
 {
 private:
-    Settings::Signal &signal{Settings::Signal::getInstance()};
+    settings::Settings &signal{settings::Settings::getInstance()};
 
     uint8_t extract(int start_bit, int bit_length);
 

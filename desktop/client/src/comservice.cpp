@@ -1,4 +1,5 @@
 #include "comservice.h"
+#include <climits>
 
 uint8_t COMService::extract(int start_bit, int bit_length)
 {

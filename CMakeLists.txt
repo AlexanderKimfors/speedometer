@@ -17,7 +17,7 @@ add_executable(client
     desktop/client/src/tcpservice.cpp
     )
 target_include_directories(client PRIVATE ./desktop/client/include ./shared)
-target_link_libraries(client PRIVATE client_gui Qt6::Core Qt6::Widgets)
+target_link_libraries(client PRIVATE Qt6::Core Qt6::Widgets)
 
 
 add_executable(server
@@ -27,7 +27,7 @@ add_executable(server
     desktop/server/src/tcpservice.cpp
     )
 target_include_directories(server PRIVATE ./desktop/server/include ./shared)
-target_link_libraries(server PRIVATE server_gui Qt6::Core Qt6::Widgets)
+target_link_libraries(server PRIVATE Qt6::Core Qt6::Widgets)
 
 
 #---------------------------------------------------------------------------------------------
