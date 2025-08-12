@@ -1,30 +1,23 @@
-#ifndef TCPCOM_H
-#define TCPCOM_H
+#ifndef TCPSERVICE_H
+#define TCPSERVICE_H
 
-#include "comservice.h"
-#include <QTcpSocket>
+#include <cstdint>
+#include <netinet/in.h>
 
-class TCPService : public COMService
+class TcpClientService
 {
 public:
-    TCPService();
-
-    bool connectToHost(const QString &host, quint16 port) override;
-    void disconnectFromHost() override;
-    bool isConnected() const override;
-
-    bool sendData(const QByteArray &data) override;
-    QByteArray receiveData() override;
-
-    // Manual polling alternative to signals
-    bool hasNewData() const;
+    TcpClientService(void);
+    int32_t init(const char *ip_addr, uint16_t port);
+    int32_t connectToServer(void);
+    void closeConnection(void);
 
 private:
-    void handleReadyRead();
+    int32_t requestIntValue(const char *command);
+    bool requestBoolValue(const char *command);
 
-    QTcpSocket socket_;
-    QByteArray buffer_;
-    bool newDataAvailable_ = false;
+    int sockfd;
+    struct sockaddr_in servaddr;
 };
 
 #endif

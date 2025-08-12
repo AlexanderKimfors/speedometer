@@ -1,51 +1,110 @@
 #include "tcpservice.h"
-#include <QAbstractSocket>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <cstring>
+#include <cstdio>
 
-TCPService::TCPService()
+tcpservice::tcpservice(void)
 {
-    QObject::connect(&socket_, &QTcpSocket::readyRead, [this]()
-                     { handleReadyRead(); });
+    sockfd = -1;
+    (void)std::memset(&servaddr, 0, sizeof(servaddr));
 }
 
-bool TCPService::connectToHost(const QString &host, quint16 port)
+int32_t tcpservice::init(const char *ip_addr, uint16_t port)
 {
-    socket_.connectToHost(host, port);
-    return socket_.waitForConnected(3000); // Optional timeout (3 seconds)
+    int32_t status = -1;
+
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd >= 0)
+    {
+        servaddr.sin_family = AF_INET;
+        servaddr.sin_port = htons(port);
+        if (inet_pton(AF_INET, ip_addr, &servaddr.sin_addr) > 0)
+        {
+            status = 0;
+        }
+        else
+        {
+            (void)close(sockfd);
+            sockfd = -1;
+        }
+    }
+
+    return status;
 }
 
-void TCPService::disconnectFromHost()
+int32_t tcpservice::connectToServer(void)
 {
-    socket_.disconnectFromHost();
+    int32_t status = -1;
+    if (sockfd >= 0)
+    {
+        if (connect(sockfd, reinterpret_cast<struct sockaddr *>(&servaddr), sizeof(servaddr)) == 0)
+        {
+            status = 0;
+        }
+    }
+    return status;
 }
 
-bool TCPService::isConnected() const
+void tcpservice::closeConnection(void)
 {
-    return socket_.state() == QAbstractSocket::ConnectedState;
+    if (sockfd >= 0)
+    {
+        (void)shutdown(sockfd, SHUT_RDWR);
+        (void)close(sockfd);
+        sockfd = -1;
+    }
 }
 
-bool TCPService::sendData(const QByteArray &data)
+int32_t tcpservice::requestIntValue(const char *command)
 {
-    if (!isConnected())
-        return false;
-    qint64 bytesWritten = socket_.write(data);
-    return bytesWritten == data.size();
+    int32_t value = -1;
+    char buffer[32];
+    ssize_t bytes_sent = 0;
+    ssize_t bytes_read = 0;
+
+    (void)std::memset(buffer, 0, sizeof(buffer));
+
+    if ((sockfd >= 0) && (command != nullptr))
+    {
+        bytes_sent = write(sockfd, command, std::strlen(command));
+        if (bytes_sent == static_cast<ssize_t>(std::strlen(command)))
+        {
+            bytes_read = read(sockfd, buffer, sizeof(buffer) - 1);
+            if (bytes_read > 0)
+            {
+                value = std::atoi(buffer);
+            }
+        }
+    }
+
+    return value;
 }
 
-QByteArray TCPService::receiveData()
+bool tcpservice::requestBoolValue(const char *command)
 {
-    newDataAvailable_ = false;
-    QByteArray result = buffer_;
-    buffer_.clear();
+    bool result = false;
+    char buffer[8];
+    ssize_t bytes_sent = 0;
+    ssize_t bytes_read = 0;
+
+    (void)std::memset(buffer, 0, sizeof(buffer));
+
+    if ((sockfd >= 0) && (command != nullptr))
+    {
+        bytes_sent = write(sockfd, command, std::strlen(command));
+        if (bytes_sent == static_cast<ssize_t>(std::strlen(command)))
+        {
+            bytes_read = read(sockfd, buffer, sizeof(buffer) - 1);
+            if (bytes_read > 0)
+            {
+                if (std::strncmp(buffer, "1", 1) == 0)
+                {
+                    result = true;
+                }
+            }
+        }
+    }
+
     return result;
-}
-
-bool TCPService::hasNewData() const
-{
-    return newDataAvailable_;
-}
-
-void TCPService::handleReadyRead()
-{
-    buffer_.append(socket_.readAll());
-    newDataAvailable_ = true;
 }
