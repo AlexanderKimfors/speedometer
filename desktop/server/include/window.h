@@ -17,7 +17,6 @@ public:
     virtual ~window();
 
 private:
-
     QSlider speedSlider;
     QSlider tempSlider;
     QSlider batterySlider;

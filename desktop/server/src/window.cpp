@@ -30,9 +30,10 @@ window::window()
         slider.setFixedWidth(600);
     };
 
-    setupSlider(speedSlider, 0, 240);
-    setupSlider(tempSlider, -60, 60);
-    setupSlider(batterySlider, 0, 100);
+    Settings::Signal &settings = Settings::Signal::getInstance();
+    setupSlider(speedSlider, settings["speed"].min, settings["speed"].max);
+    setupSlider(tempSlider, settings["temperature"].min, settings["temperature"].max);
+    setupSlider(batterySlider, settings["battery"].min, settings["battery"].max);
 
     // Speed row
     speedLayout.addWidget(&speedLabel);
