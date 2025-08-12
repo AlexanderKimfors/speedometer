@@ -30,7 +30,7 @@ window::window(ComService *_service) : service{_service}
         slider.setFixedWidth(600);
     };
 
-    Settings::Signal &settings = Settings::Signal::getInstance();
+    settings::Settings &settings = settings::Settings::getInstance();
     setupSlider(speedSlider, settings["speed"].min, settings["speed"].max);
     setupSlider(tempSlider, settings["temperature"].min, settings["temperature"].max);
     setupSlider(batterySlider, settings["battery"].min, settings["battery"].max);
@@ -78,21 +78,21 @@ window::~window() {}
 
 void window::onSpeedChanged(int val)
 {
-    service->setSpeed[val];
+    service->setSpeed(val);
     speedValueLabel.setText(QString("%1 km/h").arg(val));
     qDebug() << "Speed changed:" << val << "km/h";
 }
 
 void window::onTemperatureChanged(int val)
 {
-    service->setTemperature[val];
+    service->setTemperature(val);
     tempValueLabel.setText(QString("%1 °C").arg(val));
     qDebug() << "Temperature changed:" << val << "°C";
 }
 
 void window::onBatteryChanged(int val)
 {
-    service->setBatteryLevel[val];
+    service->setBatteryLevel(val);
     batteryValueLabel.setText(QString("%1 %").arg(val));
     qDebug() << "Battery changed:" << val << "%";
 }
@@ -150,4 +150,3 @@ void window::onRightChecked(bool checked)
         leftCheckBox.setEnabled(true);
     }
 }
-
