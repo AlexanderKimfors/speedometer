@@ -1,55 +1,54 @@
 #ifndef CANVAS_H
 #define CANVAS_H
 
-#include <QTimer>
 #include <QWidget>
 #include <QPainter>
-#include <QPaintEvent>
-// #include <QAudioOutput>
-// #include <QMediaPlayer>
-
+#include "comservice.h"
+#include <QTimer>
 class Canvas : public QWidget
 {
-    QPen pen;
-    QBrush brush; // tror denna ska användas till batteriet, men vi kör just nu utan den pga att vi använder en symbol.
-    QPainter painter;
-    // QAudioOutput audio_output;
-    // QMediaPlayer media_player;
-    QFont text_font{"Arial"};
-    QFont icon_font{"Material Icons"};
-
-public:
-    Canvas();
-
-    void set_light(bool left, bool right)
-    {
-        left_light = left;
-        right_light = right;
-    }
-    void set_temperature(int temp) { temperature = temp; }
-    void set_battery_level(int percent) { battery_level = percent; }
-    void set_speed(int spd) { speed = spd; }
-#if 0
-    void set_status(int sttus) { status = sttus; }
-#endif
-
 private:
-    int speed{0};
-    int temperature{0};
-    int battery_level{0};
-    bool status{false};
-    bool left_light{false};
-    bool blink_state{true};
-    bool right_light{false};
-    QTimer draw_timer;
+    QPainter painter;
+    QFont icon_font{"Material Icons"};
+    QFont text_font{"Arial"};
+
+    COMService *service;
+
     QTimer blink_timer;
 
-    void draw_temperature(void);
-    void draw_battery_level(void);
-    void draw_speed(void);
-    void draw_light(void);
-    void toggle_blink(void);
+    bool blink_on{false};
 
     void paintEvent(QPaintEvent *event) override;
+    void drawTemperature(void);
+    void drawBattery(void);
+    void drawSpeedometerCenterCirle(void);
+    void drawSpeedometerArc(void);
+    /**
+     * @brief Draws the longest lines that represents km for: 0, 20, 40, 60 .. 240
+     *
+     */
+    void drawSpeedometerLongLines(void);
+    /**
+     * @brief Draws the medium lines that represents km for: 10, 30, 50, 70 .. 230
+     *
+     */
+    void drawSpeedometerMediumLines(void);
+    /**
+     * @brief Draws the small lines that represents km for: 5, 15, 25, 35, .. 235
+     *
+     */
+    void drawSpeedometerSmallLines(void);
+    void drawSpeedometerSpeedLabels(void);
+    void drawSpeedometerNeedle(void);
+    void drawSpeedomterIcon(void);
+    void drawSpeedometerConnectionErrorIcon(void);
+
+    void drawTurnSignals(void);
+
+    void toggle_blink(void);
+
+public:
+    Canvas(COMService *_service);
 };
-#endif // CANVAS_H
+
+#endif

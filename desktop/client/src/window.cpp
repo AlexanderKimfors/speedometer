@@ -1,6 +1,6 @@
 #include "window.h"
 #include "canvas.h"
-Window::Window(QWidget *parent)
+Window::Window(COMService *_service, QWidget *parent) : canvas{_service}
     : QDialog(parent)
 {
     setFixedSize(800, 560);
