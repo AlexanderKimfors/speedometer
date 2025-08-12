@@ -1,123 +1,101 @@
 #include "canvas.h"
+#include "config.h"
+#include "positions.h"
 
-static void draw_center_point(QPainter &painter, int center_x, int center_y);
-static void draw_arc(QPainter &painter, QPen &pen, int thickness, int angle_span, QRect &rec);
-static void draw_lines(QPainter &painter, QPen &pen, int radius, int center_x, int center_y, int thickness, int tick_length);
-static void draw_text(QFont &font, QPainter &painter, QPen &pen, int thickness, int radius, int center_x, int center_y);
-static void draw_speed_line(QPainter &painter, QPen &pen, int thickness, int radius, int center_x, int center_y, int speed);
-static void draw_speed_text_icon(QFont &text_font, QFont &icon_font, QPainter &painter, int center_x, int center_y, int speed);
-static void draw_connection_error_text_icon(QFont &text_font, QFont &icon_font, QPainter &painter, int center_x, int center_y);
-
-Canvas::Canvas()
+Canvas::Canvas(COMService *_service) : service{_service}
 {
-    // Setup default pen and brush
-    pen.setColor(Qt::white);
-    pen.setWidth(2);
-    brush.setColor(Qt::black);
-    brush.setStyle(Qt::SolidPattern);
-
-    text_font.setPointSize(12);
-    icon_font.setPointSize(40);
-
-    setFixedSize(800, 560); // Match your window size
-
+    setFixedSize(Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT);
     connect(&blink_timer, &QTimer::timeout, this, &Canvas::toggle_blink);
     blink_timer.start(500);
-
-    connect(&draw_timer, &QTimer::timeout, this, [this]()
-            { this->update(); });
-    draw_timer.start(10);
 }
 
 void Canvas::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
 
+    drawTemperature();
+
+    drawBattery();
+
+    drawSpeedometerCenterCirle();
+    drawSpeedometerArc();
+    drawSpeedometerLongLines();
+    drawSpeedometerMediumLines();
+    drawSpeedometerSmallLines();
+    drawSpeedometerSpeedLabels();
+    drawSpeedometerNeedle();
+
+    if (blink_on)
+    {
+        drawTurnSignals();
+    }
+
+    if (service->get_connection_state())
+    {
+        drawSpeedomterIcon();
+    }
+    else
+    {
+        drawSpeedometerConnectionErrorIcon();
+    }
+}
+
+void Canvas::drawTemperature(void)
+{
     painter.begin(this);
-    painter.setRenderHint(QPainter::Antialiasing);
+    QRect icon_rect(Positions::TEMP_X, Positions::TEMP_Y, Positions::TEMP_WIDTH, Positions::TEMP_ICON_HEIGHT);
+    QRect text_rect(Positions::TEMP_X, Positions::TEMP_Y + Positions::TEMP_ICON_HEIGHT, Positions::TEMP_WIDTH, Positions::TEMP_TEXT_HEIGHT);
 
+    QColor color;
+
+    int temperature = service->get_temperature();
+
+    if (temperature < 5)
+    {
+        color = Qt::white;
+    }
+    else if (temperature < 40)
+    {
+        color = Qt::blue;
+    }
+    else
+    {
+        color = Qt::red;
+    }
+    icon_font.setPointSize(45);
+    painter.setFont(icon_font);
+    painter.setPen(color);
+    painter.drawText(icon_rect, Qt::AlignCenter, QChar(0xe1ff));
+
+    text_font.setPointSize(13);
+    color = "white";
+    painter.setPen(color);
     painter.setFont(text_font);
-    painter.setPen(pen);
-    painter.setBrush(brush);
-
-    draw_temperature();
-    draw_battery_level();
-    draw_speed();
-    draw_light();
+    painter.drawText(text_rect, Qt::AlignCenter, QString("%1 °C").arg(temperature));
 
     painter.end();
 }
 
-void Canvas::draw_temperature()
+void Canvas::drawBattery(void)
 {
-    icon_font.setPointSize(50);
+    painter.begin(this);
+
+    QRect icon_rect(Positions::BATTERY_X, Positions::BATTERY_Y, Positions::BATTERY_WIDTH, Positions::BATTERY_ICON_HEIGHT);
+    QRect text_rect(Positions::BATTERY_X, Positions::BATTERY_Y + Positions::BATTERY_ICON_HEIGHT, Positions::BATTERY_WIDTH, Positions::BATTERY_TEXT_HEIGHT);
+
+    icon_font.setPointSize(90);
     painter.setFont(icon_font);
+    painter.setPen("white");
+    painter.drawText(icon_rect, Qt::AlignCenter, QChar(0xe1a3));
 
-    const int icon_width = 100;
-    const int icon_height = 60;
-    const int text_height = 30;
-    const int padding = 10;
+    int battery = service->get_battery();
 
-    int x = width() - icon_width - padding;
-    int y = height() - icon_height - text_height - padding;
-
-    QRect icon_rect(x, y, icon_width, icon_height);
-    QRect text_rect(x, y + icon_height, icon_width, text_height);
-
-    // Set icon color based on temperature
-    QColor icon_color;
-    if (temperature < 5)
-    {
-
-        icon_color = Qt::white;
-    }
-    else if (temperature < 40)
-    {
-
-        icon_color = Qt::blue;
-    }
-    else
-    {
-
-        icon_color = Qt::red;
-    }
-
-    // Draw the icon with color
-    painter.setPen(icon_color);
-    painter.drawText(icon_rect, Qt::AlignCenter, QChar(0xe1ff)); // icon
-
-    // Draw the temperature text with default pen
-    painter.setFont(text_font);
-    pen.setColor(Qt::white);
-    painter.setPen(pen); // reset to default pen before drawing text
-    painter.drawText(text_rect, Qt::AlignCenter, QString("%1°C").arg(temperature));
-}
-
-void Canvas::draw_battery_level()
-{
-    icon_font.setPointSize(100);
-    painter.setFont(icon_font);
-
-    const int icon_width = 100;
-    const int icon_height = 100;
-
-    int x = width() - icon_width - 10;
-    int y = 310;
-
-    QRect icon_rect(x, y, icon_width, icon_height);
-    QRect text_rect(x, y + icon_height - 10, icon_width, 40); // Battery % text
-
-    // Draw full icon in default color
-    painter.setPen(pen);
-    painter.drawText(icon_rect, Qt::AlignCenter, QChar(0xe1a3)); // Battery icon outline
-
-    // Determine fill color
     QColor fill_color;
-    if (battery_level < 25)
+    if (battery < 25)
     {
         fill_color = Qt::red;
     }
-    else if (battery_level < 50)
+    else if (battery < 50)
     {
         fill_color = Qt::yellow;
     }
@@ -127,274 +105,264 @@ void Canvas::draw_battery_level()
     }
 
     // Clip area for fill
-    int fill_height = icon_height * battery_level / 100;
-    QRect fill_rect(icon_rect.left(), icon_rect.bottom() - fill_height, icon_width, fill_height);
+    int fill_height = icon_rect.height() * battery / 100;
+    QRect fill_rect(icon_rect.left(), icon_rect.bottom() - fill_height, icon_rect.width(), fill_height);
 
-    painter.setClipRect(fill_rect);                              // Clip only the fill area
-    painter.setPen(fill_color);                                  // Colored pen
-    painter.drawText(icon_rect, Qt::AlignCenter, QChar(0xe1a3)); // Colored battery icon fill
-    painter.setClipping(false);                                  // Reset clip
+    painter.setClipRect(fill_rect);
+    painter.setPen(fill_color);
+    painter.drawText(icon_rect, Qt::AlignCenter, QChar(0xe1a3));
+    painter.setClipping(false);
 
-    // Draw percentage text
+    text_font.setPointSize(13);
+    painter.setPen("white");
     painter.setFont(text_font);
-    painter.setPen(pen);
-    painter.drawText(text_rect, Qt::AlignCenter, QString("%1%").arg(battery_level));
+    painter.drawText(text_rect, Qt::AlignCenter, QString("%1 %").arg(battery));
+
+    painter.end();
 }
-
-void Canvas::draw_speed()
+void Canvas::drawSpeedometerCenterCirle(void)
 {
-    const int radius = 300;
-    const int thickness = 10;
-    const int center_x = width() / 2 - 50;
-    const int center_y = height() - 200; // position near bottom
-    const int angle_span = 250 * 16;
-    const int tick_length = 20;
-
-    //-----------------------------skapar boxen för--------------------------------------
-    QRect outer_rect(center_x - radius, center_y - radius,
-                     2 * radius, 2 * radius);
-    //-----------------------------------------------------------------------------------
-
-    //----------------------Målar den vita circeln i mitten------------------------------
-    draw_center_point(painter, center_x, center_y);
-    //-----------------------------------------------------------------------------------
-
-    //-------------------------------målar bågen-----------------------------------------
-    draw_arc(painter, pen, thickness, angle_span, outer_rect);
-    //-----------------------------------------------------------------------------------
-
-    // -----------------------Draw the lines in the arc----------------------------------
-    draw_lines(painter, pen, radius, center_x, center_y, thickness, tick_length);
-    //-----------------------------------------------------------------------------------
-
-    // ----------------------Draw the text of the speed----------------------------------
-    draw_text(text_font, painter, pen, thickness, radius, center_x, center_y);
-    //-----------------------------------------------------------------------------------
-
-    //----------------------Målar det röda sträcket för hastigheten----------------------
-    draw_speed_line(painter, pen, thickness, radius, center_x, center_y, speed);
-    //-----------------------------------------------------------------------------------
-    if (status)
-    {
-        draw_speed_text_icon(text_font, icon_font, painter, center_x, center_y, speed);
-    }
-    else
-    {
-        draw_connection_error_text_icon(text_font, icon_font, painter, center_x, center_y);
-    }
-}
-
-void Canvas::draw_light()
-{
-    icon_font.setPointSize(60);
-    painter.setFont(icon_font);
-
-    const int icon_width = 80;
-    const int icon_height = 80;
-    const int y = 30; // Vertical position of lights
-
-    // Left light
-    if (left_light && blink_state)
-    {
-
-        QRect left_rect(40, y, icon_width, icon_height);
-        painter.setPen(Qt::green);
-        painter.drawText(left_rect, Qt::AlignCenter, QChar(0xe5c4)); // arrow_left
-    }
-
-    // Right light
-    if (right_light && blink_state)
-    {
-        QRect right_rect(590, y, icon_width, icon_height);
-        painter.setPen(Qt::green);
-        painter.drawText(right_rect, Qt::AlignCenter, QChar(0xe5c8)); // arrow_right
-    }
-}
-
-void Canvas::toggle_blink()
-{
-    if (left_light || right_light)
-    {
-        blink_state = !blink_state;
-    }
-    else
-    {
-        blink_state = true; // Visa konstant om inget blinkar
-    }
-}
-
-static void draw_center_point(QPainter &painter, int center_x, int center_y)
-{
-    const int center_circle_radius = 20;
+    painter.begin(this);
+    painter.setRenderHint(QPainter::Antialiasing, true);
 
     painter.setPen(QPen(Qt::white, 10));
     painter.setBrush(QColor(139, 0, 0)); // Dark red
-    painter.drawEllipse(QPoint(center_x, center_y), center_circle_radius, center_circle_radius);
+    painter.drawEllipse(QPoint(Positions::SPEEDOMETER_CENTER_X, Positions::SPEEDOMETER_CENTER_Y), Positions::SPEEDOMETER_CENTER_CIRCLE_RADIUS, Positions::SPEEDOMETER_CENTER_CIRCLE_RADIUS);
+
+    painter.end();
 }
 
-static void draw_arc(QPainter &painter, QPen &pen, int thickness, int angle_span, QRect &rec)
+void Canvas::drawSpeedometerArc(void)
 {
-    // Set pen for arc thickness and color
-    pen.setColor(Qt::white);
-    pen.setWidth(thickness);
-    painter.setPen(pen);
-    painter.setBrush(Qt::NoBrush);
+    painter.begin(this);
+    painter.setRenderHint(QPainter::Antialiasing, true);
 
-    // Speed range (0–100 mapped to angle 0 to 180 degrees)
-    // int angle_start = 0 * 16;  // 0 degrees
+    QRect outer_rect(Positions::SPEEDOMETER_CENTER_X - Positions::SPEEDOMETER_ARC_RADIUS, Positions::SPEEDOMETER_CENTER_Y - Positions::SPEEDOMETER_ARC_RADIUS,
+                     2 * Positions::SPEEDOMETER_ARC_RADIUS, 2 * Positions::SPEEDOMETER_ARC_RADIUS);
 
-    // Draw background arc
-    painter.drawArc(rec, 215 * 16, -angle_span); // start 240 grader, slut -60 grader
+    painter.setPen(QPen(Qt::white, Positions::SPEEDOMETER_ARC_THICKNESS));
+
+    painter.drawArc(outer_rect, Positions::SPEEDOMETER_ARC_START_ANGLE * 16, -(Positions::SPEEDOMETER_ARC_DEGREES_TO_DRAW * 16));
+
+    painter.end();
 }
 
-static void draw_lines(QPainter &painter, QPen &pen, int radius, int center_x, int center_y, int thickness, int tick_length)
+void Canvas::drawSpeedometerLongLines(void)
 {
-    pen.setWidth(thickness - 6);
-    painter.setPen(pen);
+    painter.begin(this);
+    painter.setRenderHint(QPainter::Antialiasing, true);
 
-    const int tick_radius_outer = radius - (thickness / 2) - 10;
-    const int tick_radius_inner = tick_radius_outer - tick_length;
+    painter.setPen(QPen(Qt::white, Positions::SPEEDOMETER_LONG_LINES_THICHNESS));
 
     int speed_value;
     float angle_deg;
     float angle_rad;
 
-    // Paint the big lines for each 20km
     for (int i = 0; i <= 12; ++i)
     {
         speed_value = i * 20;
-        angle_deg = 210 - speed_value; // from 240 to -60 degrees
+        angle_deg = Positions::SPEEDOMETER_ARC_START_ANGLE - Positions::SPEEDOMETER_LINES_ANGLE_OFFSET - speed_value;
         angle_rad = qDegreesToRadians(angle_deg);
 
-        // Tick line
         QPointF outer(
-            center_x + tick_radius_outer * std::cos(angle_rad),
-            center_y - tick_radius_outer * std::sin(angle_rad));
+            Positions::SPEEDOMETER_CENTER_X + Positions::SPEEDOMETER_LINES_START_RADIUS * std::cos(angle_rad),
+            Positions::SPEEDOMETER_CENTER_Y - Positions::SPEEDOMETER_LINES_START_RADIUS * std::sin(angle_rad));
         QPointF inner(
-            center_x + tick_radius_inner * std::cos(angle_rad),
-            center_y - tick_radius_inner * std::sin(angle_rad));
+            Positions::SPEEDOMETER_CENTER_X + Positions::SPEEDOMETER_LONG_LINES_END_RADIUS * std::cos(angle_rad),
+            Positions::SPEEDOMETER_CENTER_Y - Positions::SPEEDOMETER_LONG_LINES_END_RADIUS * std::sin(angle_rad));
         painter.drawLine(inner, outer);
     }
-    // -----------------------------------------------------------------------
 
-    // Paint the lines for eatch 5km
-    pen.setWidth(thickness - 8);
-    painter.setPen(pen);
+    painter.end();
+}
 
-    int minor_tick_radius_inner = tick_radius_outer - 6;
+void Canvas::drawSpeedometerMediumLines(void)
+{
+
+    painter.begin(this);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+
+    painter.setPen(QPen(Qt::white, Positions::SPEEDOMETER_MEDIUM_LINES_THICKNESS));
+
+    int speed_value;
+    float angle_deg;
+    float angle_rad;
+
+    for (int i = 0; i < 12; ++i)
+    {
+        speed_value = (i * 20) + 10;
+        angle_deg = Positions::SPEEDOMETER_ARC_START_ANGLE - Positions::SPEEDOMETER_LINES_ANGLE_OFFSET - speed_value; // ändra LONG till en gemensam till alla lines?
+        angle_rad = qDegreesToRadians(angle_deg);
+
+        QPointF outer(
+            Positions::SPEEDOMETER_CENTER_X + Positions::SPEEDOMETER_LINES_START_RADIUS * std::cos(angle_rad),
+            Positions::SPEEDOMETER_CENTER_Y - Positions::SPEEDOMETER_LINES_START_RADIUS * std::sin(angle_rad));
+        QPointF inner(
+            Positions::SPEEDOMETER_CENTER_X + Positions::SPEEDOMETER_MEDIUM_LINES_END_RADIUS * std::cos(angle_rad),
+            Positions::SPEEDOMETER_CENTER_Y - Positions::SPEEDOMETER_MEDIUM_LINES_END_RADIUS * std::sin(angle_rad));
+        painter.drawLine(inner, outer);
+    }
+    painter.end();
+}
+void Canvas::drawSpeedometerSmallLines(void)
+{
+    painter.begin(this);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+
+    painter.setPen(QPen(Qt::white, Positions::SPEEDOMETER_SMALL_LINES_THICKNESS));
+
+    int speed_value;
+    float angle_deg;
+    float angle_rad;
 
     for (int i = 0; i <= 23; ++i)
     {
         speed_value = i * 10 + 5; // 5, 15, 25, ..., 235
 
-        angle_deg = 210 - speed_value;
+        angle_deg = Positions::SPEEDOMETER_ARC_START_ANGLE - Positions::SPEEDOMETER_LINES_ANGLE_OFFSET - speed_value;
         angle_rad = qDegreesToRadians(angle_deg);
 
         QPointF outer(
-            center_x + tick_radius_outer * std::cos(angle_rad),
-            center_y - tick_radius_outer * std::sin(angle_rad));
+            Positions::SPEEDOMETER_CENTER_X + Positions::SPEEDOMETER_LINES_START_RADIUS * std::cos(angle_rad),
+            Positions::SPEEDOMETER_CENTER_Y - Positions::SPEEDOMETER_LINES_START_RADIUS * std::sin(angle_rad));
         QPointF inner(
-            center_x + minor_tick_radius_inner * std::cos(angle_rad),
-            center_y - minor_tick_radius_inner * std::sin(angle_rad));
+            Positions::SPEEDOMETER_CENTER_X + Positions::SPEEDOMETER_SMALL_LINES_END_RADIUS * std::cos(angle_rad),
+            Positions::SPEEDOMETER_CENTER_Y - Positions::SPEEDOMETER_SMALL_LINES_END_RADIUS * std::sin(angle_rad));
         painter.drawLine(inner, outer);
     }
 
-    // -----------------------------------------------------------------------
-
-    minor_tick_radius_inner = tick_radius_outer - 9;
-
-    // Paint the lines for eatch 10km
-    pen.setWidth(thickness - 7);
-    painter.setPen(pen);
-    for (int i = 0; i < 12; ++i)
-    {
-        int speed_value = (i * 20) + 10;
-        float angle_deg = 210 - speed_value; // from 240 to -60 degrees
-        float angle_rad = qDegreesToRadians(angle_deg);
-
-        // Tick line
-        QPointF outer(
-            center_x + tick_radius_outer * std::cos(angle_rad),
-            center_y - tick_radius_outer * std::sin(angle_rad));
-        QPointF inner(
-            center_x + minor_tick_radius_inner * std::cos(angle_rad),
-            center_y - minor_tick_radius_inner * std::sin(angle_rad));
-        painter.drawLine(inner, outer);
-    }
+    painter.end();
 }
 
-static void draw_text(QFont &font, QPainter &painter, QPen &pen, int thickness, int radius, int center_x, int center_y)
+void Canvas::drawSpeedometerSpeedLabels(void)
 {
-    font.setPointSize(18);
-    painter.setFont(font);
-    pen.setWidth(thickness - 6);
-    painter.setPen(pen);
+    painter.begin(this);
 
-    const int label_radius = radius - thickness - 20;
+    text_font.setPointSize(Positions::SPEEDOMETER_LABEL_TEXT_SIZE);
+    painter.setFont(text_font);
+    painter.setPen(QPen(Qt::white));
+
+    const int label_radius = Positions::SPEEDOMETER_ARC_RADIUS - Positions::SPEEDOMETER_ARC_THICKNESS - Positions::SPEEDOMETER_LABEL_OFFSET_FROM_ARC;
+    const int lable_text_offset_x = Positions::SPEEDOMETER_LABEL_TEXT_WIDTH / 2;
+    const int lable_text_offset_y = Positions::SPEEDOMETER_LABEL_TEXT_HEIGHT / 2;
 
     for (int i = 0; i <= 12; ++i)
     {
         int speed_value = i * 20;
-        float angle_deg = 210 - speed_value; // from 240 to -60 degrees
+        float angle_deg = Positions::SPEEDOMETER_ARC_START_ANGLE - Positions::SPEEDOMETER_LINES_ANGLE_OFFSET - speed_value;
         float angle_rad = qDegreesToRadians(angle_deg);
 
         QPointF label_point(
-            center_x + (label_radius - 30) * std::cos(angle_rad) - 23,
-            center_y - (label_radius - 30) * std::sin(angle_rad) - 10);
-        painter.drawText(QRectF(label_point, QSizeF(40, 20)),
+            Positions::SPEEDOMETER_CENTER_X + (label_radius - Positions::SPEEDOMETER_LABEL_INNER_PADDING_X) * std::cos(angle_rad) - lable_text_offset_x,
+            Positions::SPEEDOMETER_CENTER_Y - (label_radius - Positions::SPEEDOMETER_LABEL_INNER_PADDING_Y) * std::sin(angle_rad) - lable_text_offset_y);
+
+        painter.drawText(QRectF(label_point, QSizeF(Positions::SPEEDOMETER_LABEL_TEXT_WIDTH, Positions::SPEEDOMETER_LABEL_TEXT_HEIGHT)),
                          Qt::AlignCenter, QString::number(speed_value));
     }
+
+    painter.end();
 }
 
-static void draw_speed_line(QPainter &painter, QPen &pen, int thickness, int radius, int center_x, int center_y, int speed)
+void Canvas::drawSpeedometerNeedle(void)
 {
-    pen.setWidth(thickness - 6);
-    painter.setPen(pen);
+    painter.begin(this);
+    painter.setRenderHint(QPainter::Antialiasing, true);
 
-    const int tick_radius_outer = radius - (thickness / 2) - 10;
+    painter.setPen(QPen(QColor(139, 0, 0), Positions::SPEEDOMETER_NEEDLE_THICKNESS));
 
-    int minor_tick_radius_inner = tick_radius_outer - 45;
+    const int needle_length = Positions::SPEEDOMETER_ARC_RADIUS - (Positions::SPEEDOMETER_ARC_THICKNESS / 2) - Positions::SPEEDOMTER_NEEDLE_OFFSET_FROM_ARC;
 
-    pen.setWidth(thickness - 7);
-    pen.setColor(QColor(139, 0, 0));
-    painter.setPen(pen);
-    for (int i = 0; i < 12; ++i)
-    {
-        float angle_deg = 210 - speed; // from 240 to -60 degrees
-        float angle_rad = qDegreesToRadians(angle_deg);
+    float angle_deg = Positions::SPEEDOMETER_ARC_START_ANGLE - Positions::SPEEDOMETER_LINES_ANGLE_OFFSET - service->get_speed();
+    float angle_rad = qDegreesToRadians(angle_deg);
 
-        QPointF outer(
-            center_x + minor_tick_radius_inner * std::cos(angle_rad),
-            center_y - minor_tick_radius_inner * std::sin(angle_rad));
-        QPointF inner(
-            center_x,
-            center_y);
-        painter.drawLine(inner, outer);
-    }
+    QPointF outer(
+        Positions::SPEEDOMETER_CENTER_X + needle_length * std::cos(angle_rad),
+        Positions::SPEEDOMETER_CENTER_Y - needle_length * std::sin(angle_rad));
+    QPointF inner(
+        Positions::SPEEDOMETER_CENTER_X,
+        Positions::SPEEDOMETER_CENTER_Y);
+    painter.drawLine(inner, outer);
+
+    painter.end();
 }
 
-static void draw_speed_text_icon(QFont &text_font, QFont &icon_font, QPainter &painter, int center_x, int center_y, int speed)
+void Canvas::drawSpeedomterIcon(void)
 {
-    painter.setFont(text_font);
-    painter.setPen(Qt::white);
-    QRect text_rec = QRect(center_x - 50, center_y + 130, 100, 20);
-    painter.drawText(text_rec, Qt::AlignCenter, QString("%1 km/h").arg(speed));
+    painter.begin(this);
 
-    icon_font.setPointSize(40);
+    icon_font.setPointSize(Positions::SPEEDOMETER_ICON_SIIZE);
+
     painter.setFont(icon_font);
-    QRect icon_rec = QRect(center_x - 50, center_y + 70, 100, 50);
+    painter.setPen(Qt::white);
+
+    const int icon_x{Positions::SPEEDOMETER_CENTER_X - (Positions::SPEEDOMETER_ICON_WIDTH / 2)};
+    const int icon_y{Positions::SPEEDOMETER_CENTER_Y + (Positions::SPEEDOMETER_ARC_RADIUS / 2) - (Positions::SPEEDOMETER_ICON_HIGHT / 2) - Positions::SPEEDOMETER_LABEL_OFFSET_FROM_ARC - Positions::SPEEDOMETER_LABEL_TEXT_HEIGHT};
+
+    QRect icon_rec = QRect(icon_x, icon_y, Positions::SPEEDOMETER_ICON_WIDTH, Positions::SPEEDOMETER_ICON_HIGHT / 2);
     painter.drawText(icon_rec, Qt::AlignCenter, QChar(0xe9e4));
+
+    text_font.setPointSize(Positions::SPEEDOMETER_ICON_TEXT_SIIZE);
+    painter.setFont(text_font);
+    QRect text_rec = QRect(icon_x, icon_y + (Positions::SPEEDOMETER_ICON_HIGHT / 2), Positions::SPEEDOMETER_ICON_WIDTH, Positions::SPEEDOMETER_ICON_HIGHT / 2);
+    painter.drawText(text_rec, Qt::AlignCenter, QString("%1 km/h").arg(service->get_speed()));
+
+    painter.end();
 }
 
-static void draw_connection_error_text_icon(QFont &text_font, QFont &icon_font, QPainter &painter, int center_x, int center_y)
+void Canvas::drawSpeedometerConnectionErrorIcon(void)
 {
+    painter.begin(this);
+
+    icon_font.setPointSize(Positions::SPEEDOMETER_ICON_SIIZE);
+
+    painter.setFont(icon_font);
+    painter.setPen(Qt::white);
+
+    const int icon_x{Positions::SPEEDOMETER_CENTER_X - (Positions::SPEEDOMETER_ICON_WIDTH / 2)};
+    const int icon_y{Positions::SPEEDOMETER_CENTER_Y + (Positions::SPEEDOMETER_ARC_RADIUS / 2) - (Positions::SPEEDOMETER_ICON_HIGHT / 2) - Positions::SPEEDOMETER_LABEL_OFFSET_FROM_ARC - Positions::SPEEDOMETER_LABEL_TEXT_HEIGHT};
+
+    QRect icon_rec = QRect(icon_x, icon_y, Positions::SPEEDOMETER_ICON_WIDTH, Positions::SPEEDOMETER_ICON_HIGHT / 2);
+    painter.drawText(icon_rec, Qt::AlignCenter, QChar(0xe628));
+
+    text_font.setPointSize(Positions::SPEEDOMETER_ICON_TEXT_SIIZE);
     painter.setFont(text_font);
-    painter.setPen(Qt::red);
-    QRect text_rec = QRect(center_x - 100, center_y + 130, 200, 20);
+    QRect text_rec = QRect(icon_x, icon_y + (Positions::SPEEDOMETER_ICON_HIGHT / 2), Positions::SPEEDOMETER_ICON_WIDTH, Positions::SPEEDOMETER_ICON_HIGHT / 2);
     painter.drawText(text_rec, Qt::AlignCenter, QString("Connection Error"));
 
-    icon_font.setPointSize(40);
+    painter.end();
+}
+
+void Canvas::drawTurnSignals(void)
+{
+    painter.begin(this);
+
+    icon_font.setPointSize(Positions::TURN_SIGNAL_ICON_SIZE);
     painter.setFont(icon_font);
-    QRect icon_rec = QRect(center_x - 50, center_y + 70, 100, 50);
-    painter.drawText(icon_rec, Qt::AlignCenter, QChar(0xe628));
+    painter.setPen(Qt::green);
+
+    if (service->get_left_light())
+    {
+        QRect left_rect(40, 30, 80, 80);
+        painter.drawText(left_rect, Qt::AlignCenter, QChar(0xe5c4)); // arrow_left
+    }
+    if (service->get_right_light())
+    {
+        QRect right_rect(590, 30, 80, 80);
+        painter.drawText(right_rect, Qt::AlignCenter, QChar(0xe5c8)); // arrow_right
+    }
+
+    painter.end();
+}
+
+void Canvas::toggle_blink(void)
+{
+    if (blink_on)
+    {
+        blink_on = false;
+    }
+    else
+    {
+        blink_on = true;
+    }
+    update();
 }

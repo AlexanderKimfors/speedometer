@@ -4,8 +4,9 @@
 
 int main(int argc, char **argv)
 {
-    COMService *service{TCPService{}};
 
+    COMService *service{TCPService{}};
+  
     QApplication app(argc, argv);
 
     Window window{service};
