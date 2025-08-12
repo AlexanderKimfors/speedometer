@@ -8,7 +8,7 @@ int main(int argc, char **argv)
 
     QApplication app(argc, argv);
 
-    Window window;
+    Window window{service};
     window.show(); // visar dialogfönstret
 
     return app.exec();
