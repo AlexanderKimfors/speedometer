@@ -3,7 +3,8 @@
 
 int main(int argc, char **argv)
 {
-    QApplication app(argc, argv);
+    COMservice service *
+        QApplication app(argc, argv);
 
     Window window;
     window.show(); // visar dialogfönstret
