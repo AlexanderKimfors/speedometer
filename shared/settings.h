@@ -1,6 +1,9 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
+#define BAUDRATE 115200
+#define BUFLEN 3
+
 #ifdef __cplusplus
 
 #include <string>
@@ -104,10 +107,10 @@ namespace Settings
 
     namespace SerialPort
     {
-        inline constexpr int BAUD_RATE{9600};
+        inline constexpr int BAUD_RATE{115200};
         inline constexpr int WAIT_FOR_DATA_MS{100};
-        inline constexpr char CLIENT_PORT[]{"/dev/ttyUSB0"};
-        inline constexpr char SERVER_PORT[]{"dev/ttyUSB1"};
+        inline constexpr char CLIENT_PORT[]{"/dev/ttyUSB2"};
+        inline constexpr char SERVER_PORT[]{"/dev/ttyUSB0"};
     } // namespace SerialPort
 }
 #endif

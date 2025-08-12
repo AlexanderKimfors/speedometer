@@ -7,7 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets SerialPort)
 
 add_executable(client
     desktop/client/main.cpp
@@ -15,18 +15,20 @@ add_executable(client
     desktop/client/src/canvas.cpp
     desktop/client/src/comservice.cpp
     desktop/client/src/tcpservice.cpp
+    desktop/client/src/serialportservice.cpp
     )
 target_include_directories(client PRIVATE desktop/client/include shared)
-target_link_libraries(client PRIVATE Qt6::Widgets)
+target_link_libraries(client PRIVATE Qt6::Widgets Qt6::SerialPort)
 
 add_executable(server
     desktop/server/main.cpp
     desktop/server/src/window.cpp
     desktop/server/src/comservice.cpp
     desktop/server/src/tcpservice.cpp
+    desktop/server/src/serialportservice.cpp
     )
 target_include_directories(server PRIVATE desktop/server/include shared)
-target_link_libraries(server PRIVATE Qt6::Widgets)
+target_link_libraries(server PRIVATE Qt6::Widgets Qt6::SerialPort)
 
 if(NOT EXISTS "$ENV{HOME}/.local/share/fonts/MaterialIcons.ttf")
     message(STATUS "Font saknas - installeras till: $ENV{HOME}/.local/share/fonts/")

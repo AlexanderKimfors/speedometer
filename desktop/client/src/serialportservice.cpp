@@ -1,7 +1,5 @@
 #include "serialportservice.h"
-#include <thread>
 #include <QDebug>
-#include <unistd.h>
 
 SerialPortService::SerialPortService()
 {
@@ -46,19 +44,19 @@ void SerialPortService::run()
         }
         else
         {
-            if (serial.open(QIODevice::ReadOnly))
+            if (serial.open(QIODevice::ReadWrite))
             {
                 qDebug() << "Serial port opened";
                 connected = true;
             }
             else
             {
-                qDebug() << "Error: Client could not open the serial port";
+                qDebug() << "Error: Could not open the serial port in readonly mood";
                 connected = false;
             }
         }
 
-        msleep(20);
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
 
     if (serial.isOpen())

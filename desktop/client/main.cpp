@@ -1,7 +1,8 @@
 #include "window.h"
 #include <QApplication>
-#include <comservice.h>
-#include <tcpservice.h>
+#include "comservice.h"
+#include "tcpservice.h"
+// #include "serialportservice.h"
 
 int main(int argc, char **argv)
 {
