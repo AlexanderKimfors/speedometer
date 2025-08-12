@@ -4,13 +4,10 @@
 
 window::window()
 {
-    
     // Align labels and value labels
     speedLabel.setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     tempLabel.setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     batteryLabel.setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    
-
     speedValueLabel.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     tempValueLabel.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     batteryValueLabel.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
@@ -31,16 +28,16 @@ window::window()
         slider.setFixedWidth(600);
     };
 
-    setupSlider(speedSlider, 0, 240);
-    setupSlider(tempSlider, -60, 60);
-    setupSlider(batterySlider, 0, 100);
+    Settings::Signal &settings = Settings::Signal::getInstance();
+    setupSlider(speedSlider, settings["speed"].min, settings["speed"].max);
+    setupSlider(tempSlider, settings["temperature"].min, settings["temperature"].max);
+    setupSlider(batterySlider, settings["battery"].min, settings["battery"].max);
 
     // Speed row
     speedLayout.addWidget(&speedLabel);
     speedLayout.addWidget(&speedSlider);
     speedLayout.addWidget(&speedValueLabel);
     layout.addLayout(&speedLayout);
-
 
     // Temperature row
     tempLayout.addWidget(&tempLabel);
@@ -104,7 +101,7 @@ void window::onLeftChecked(bool checked)
 
         rightCheckBox.blockSignals(true);
         rightCheckBox.setChecked(false);
-        rightCheckBox.setEnabled(true); 
+        rightCheckBox.setEnabled(true);
         rightCheckBox.blockSignals(false);
         return;
     }
@@ -132,7 +129,7 @@ void window::onRightChecked(bool checked)
 
         leftCheckBox.blockSignals(true);
         leftCheckBox.setChecked(false);
-        leftCheckBox.setEnabled(true); 
+        leftCheckBox.setEnabled(true);
         leftCheckBox.blockSignals(false);
         return;
     }

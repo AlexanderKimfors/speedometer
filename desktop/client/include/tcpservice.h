@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #ifndef TCPSERVICE_H
 #define TCPSERVICE_H #include "comservice.h"
 #include <sys/socket.h>
@@ -26,4 +27,11 @@ public:
     void run() override;
     bool get_connection_state() override;
 };
+=======
+#ifndef TCPCOM_H
+#define TCPCOM_H
+
+#include "comservice.h"
+
+>>>>>>> main
 #endif
