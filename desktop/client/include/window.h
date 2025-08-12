@@ -11,7 +11,7 @@ class Window : public QDialog
     Canvas canvas;
 
 public:
-    explicit Window(COMService *_service QWidget *parent = nullptr);
+    explicit Window(COMService *_service, QWidget *parent = nullptr);
 };
 
 #endif // WINDOW_H
