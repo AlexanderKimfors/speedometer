@@ -1,8 +1,34 @@
 #ifndef COMSERVICE_H
 #define COMSERVICE_H
 
-class COMService
+#include <cstdint>
+#include "setting.h"
+#include <mutex>
+#include <atomic>
+
+class ComService
 {
+    Settings::Signal &signal{Settings::Signal::getInstance()};
+    void insert(int start, int length, uint32_t value);
+
+protected:
+    std::mutex mtx;
+    uint8_t buffer[BUFFLEN]{0};
+    std::atomic<bool> status{false};
+    virtual void run(void) = 0;
+
+public:
+    ComService();
+
+    bool getStatus(void) { return status; }
+
+    void setTemperature(int32_t temperature);
+    void setBatteryLevel(uint32_t level);
+    void setRightLight(bool state);
+    void setLeftLight(bool state);
+    void setSpeed(uint32_t speed);
+
+    virtual ~ComService() = default;
 };
 
 #endif

@@ -8,7 +8,6 @@ window::window()
     speedLabel.setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     tempLabel.setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     batteryLabel.setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    
     speedValueLabel.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     tempValueLabel.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     batteryValueLabel.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
@@ -102,7 +101,7 @@ void window::onLeftChecked(bool checked)
 
         rightCheckBox.blockSignals(true);
         rightCheckBox.setChecked(false);
-        rightCheckBox.setEnabled(true); 
+        rightCheckBox.setEnabled(true);
         rightCheckBox.blockSignals(false);
         return;
     }
@@ -130,7 +129,7 @@ void window::onRightChecked(bool checked)
 
         leftCheckBox.blockSignals(true);
         leftCheckBox.setChecked(false);
-        leftCheckBox.setEnabled(true); 
+        leftCheckBox.setEnabled(true);
         leftCheckBox.blockSignals(false);
         return;
     }
