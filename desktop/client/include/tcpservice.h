@@ -3,8 +3,4 @@
 
 #include "comservice.h"
 
-class TCPService : public COMService
-{
-};
-
 #endif
