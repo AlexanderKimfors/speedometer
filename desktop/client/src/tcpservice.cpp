@@ -6,7 +6,7 @@
     std::cout << "Initializing tcp service\n";
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(Settings::Server::PORT);
-    if (inet_pton(AF_INET, "127.0.0.1", &server_address.sin_addr) <= 0)
+    if (inet_pton(AF_INET, Setting::Server::IP_ADRESS, &server_address.sin_addr) <= 0)
     {
         std::cerr << "Invalid address\n";
         exit(EXIT_FAILURE);
