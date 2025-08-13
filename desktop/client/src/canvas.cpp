@@ -6,6 +6,9 @@ Canvas::Canvas(COMService *_service) : service{_service}
     setFixedSize(Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT);
     connect(&blink_timer, &QTimer::timeout, this, &Canvas::toggle_blink);
     blink_timer.start(500);
+    warningSound.setSource(QUrl::fromLocalFile("sound.wav"));
+    warningSound.setLoopCount(1); // Play once per trigger
+    warningSound.setVolume(0.7f); // Adjust volume 
 }
 
 void Canvas::paintEvent(QPaintEvent *event)
@@ -339,19 +342,47 @@ void Canvas::drawTurnSignals(void)
     painter.setFont(icon_font);
     painter.setPen(Qt::green);
 
+    bool lightActive = false;
+
     if (service->get_left_light())
     {
         QRect left_rect(40, 30, 80, 80);
         painter.drawText(left_rect, Qt::AlignCenter, QChar(0xe5c4)); // arrow_left
+        lightActive = true;
     }
     if (service->get_right_light())
     {
         QRect right_rect(590, 30, 80, 80);
         painter.drawText(right_rect, Qt::AlignCenter, QChar(0xe5c8)); // arrow_right
+        lightActive = true;
     }
 
+
     painter.end();
+
+    // Stop immediately if both lights are off
+    if (!lightActive)
+    {
+        if (warningSound.isPlaying())
+            warningSound.stop();
+
+        // Update last state and bail out
+        lastLightActive = lightActive;
+        lastBlinkOn = blink_on;
+        return;
+    }
+
+    if (blink_on && (!lastBlinkOn || !lastLightActive))
+    {
+        // Edge detected: start of a new flash
+        warningSound.play();
+    }
+
+    // Remember states for next call
+    lastLightActive = lightActive;
+    lastBlinkOn = blink_on;
 }
+
 
 void Canvas::toggle_blink(void)
 {
