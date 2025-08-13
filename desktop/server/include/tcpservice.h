@@ -1,29 +1,42 @@
-#ifndef TCPCOM_H
-#define TCPCOM_H
+#ifndef TCPSERVICE_H
+#define TCPSERVICE_H
+
 #include "comservice.h"
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <iostream>
+#include <unistd.h>
 #include <atomic>
-#include <thread>
-#include <string>
+#include <mutex>
 
 class TCPService : public ComService
 {
-public:
-    TCPService();
-    ~TCPService();
-
-    void run(void) override;               // Starts the server in a thread
-    void stop();                           // Signals to stop the server
-    void send(const std::string &message); // Send message to connected client
-
 private:
-    void serverLoop(); // The actual server loop
+    int server_fd;
+    int client_fd;
+    struct sockaddr_in address;
+    static constexpr int opt = 1;
+    std::atomic<bool> end;
+    std::mutex mutex;
 
-    std::atomic<bool> running;
-    std::thread serverThread;
-    std::string tempBuffer;
+    void handle_connection(void);
 
-    int sockfd = -1;
-    int connfd = -1;
+public:
+    ~TCPService()
+    {
+        if (server_fd != -1)
+        {
+            close(server_fd);
+        }
+        if (client_fd != -1)
+        {
+            close(client_fd);
+        }
+        end = true;
+    }
+    TCPService();
+
+    void run() override;
 };
 
-#endif // TCPCOM_H
+#endif

@@ -1,6 +1,6 @@
 #include "window.h"
 #include <QApplication>
-#include "tcp_alex.h"
+#include "tcpservice.h"
 
 int main(int argc, char **argv)
 {
