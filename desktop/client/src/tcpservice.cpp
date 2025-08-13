@@ -50,7 +50,7 @@ void TCPService::run()
             }
             else
             {
-                std::lock_guard<std::mutex> lock(buffer_mutex);
+                std::scoped_lock lock(buffer_mutex);
                 std::memcpy(buffer, temp_buffer, sizeof(buffer));
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(20));

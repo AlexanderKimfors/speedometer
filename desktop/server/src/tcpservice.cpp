@@ -78,7 +78,7 @@ void TCPService::run()
         uint8_t temp_buffer[sizeof(buffer)];
 
         {
-            std::lock_guard<std::mutex> lock(mutex);
+            std::scoped_lock lock(buffer_mtx);
             std::memcpy(temp_buffer, buffer, sizeof(buffer));
         }
 

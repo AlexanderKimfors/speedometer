@@ -18,7 +18,6 @@ private:
     struct sockaddr_in address;
     static constexpr int opt = 1;
     std::atomic<bool> end;
-    std::mutex mutex;
     std::thread worker_thread;
 
     void handle_connection(void);

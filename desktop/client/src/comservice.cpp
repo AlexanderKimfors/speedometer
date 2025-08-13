@@ -8,17 +8,22 @@ uint8_t COMService::extract(int start_bit, int bit_length)
     int byte_index = start_bit / CHAR_BIT;
     int bit_index = start_bit % CHAR_BIT;
 
-    for (int i = 0; i < bit_length; i++)
     {
-        uint8_t bit = (buffer[byte_index] >> bit_index) & 0b00000001;
-        data |= (bit << i);
+        std::scoped_lock lock(buffer_mutex);
 
-        bit_index++;
-
-        if (bit_index == CHAR_BIT)
+        for (int i = 0; i < bit_length; i++)
         {
-            bit_index = 0;
-            byte_index++;
+            uint8_t bit = (buffer[byte_index] >> bit_index) & 0b00000001;
+
+            data |= (bit << i);
+
+            bit_index++;
+
+            if (bit_index == CHAR_BIT)
+            {
+                bit_index = 0;
+                byte_index++;
+            }
         }
     }
 
