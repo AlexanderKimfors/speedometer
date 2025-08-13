@@ -1,5 +1,4 @@
 #include <cstdlib>
-#include <thread>
 #include <cstring>
 #include "tcpservice.h"
 
@@ -34,7 +33,7 @@ TCPService::TCPService() : ComService(), end{false}
     }
 
     /* ----- connection thread init ------- */
-    std::thread(&TCPService::handle_connection, this).detach();
+    worker_thread = std::thread(&TCPService::handle_connection, this);
 }
 
 void TCPService::handle_connection(void)

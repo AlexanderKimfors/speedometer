@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <iostream>
 #include <unistd.h>
+#include <thread>
 #include <atomic>
 #include <mutex>
 
@@ -18,6 +19,7 @@ private:
     static constexpr int opt = 1;
     std::atomic<bool> end;
     std::mutex mutex;
+    std::thread worker_thread;
 
     void handle_connection(void);
 
@@ -33,6 +35,10 @@ public:
             close(client_fd);
         }
         end = true;
+        if (worker_thread.joinable())
+        {
+            worker_thread.join();
+        }
     }
     TCPService();
 
