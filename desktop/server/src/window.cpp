@@ -98,65 +98,6 @@ void window::onBatteryChanged(int val)
     qDebug() << "Battery changed:" << val << "%";
 }
 
-#if 0
-
-void window::onLeftChecked(bool checked)
-{
-    service->setLeftLight(checked);
-    if (warningCheckBox.isChecked())
-    {
-        qDebug() << "Left signal ignored due to active warning.";
-
-        rightCheckBox.blockSignals(true);
-        rightCheckBox.setChecked(false);
-        rightCheckBox.setEnabled(false);
-        rightCheckBox.blockSignals(false);
-    }
-
-    qDebug() << "Left signal" << (checked ? "checked" : "unchecked");
-
-    if (checked)
-    {
-        rightCheckBox.blockSignals(true);
-        rightCheckBox.setChecked(false);
-        rightCheckBox.setEnabled(false);
-        rightCheckBox.blockSignals(false);
-    }
-    else
-    {
-        rightCheckBox.setEnabled(true);
-    }
-}
-
-void window::onRightChecked(bool checked)
-{
-    service->setRightLight(checked);
-    if (warningCheckBox.isChecked())
-    {
-        qDebug() << "Right signal ignored due to active warning.";
-
-        leftCheckBox.blockSignals(true);
-        leftCheckBox.setChecked(false);
-        leftCheckBox.setEnabled(false);
-        leftCheckBox.blockSignals(false);
-    }
-
-    qDebug() << "Right signal" << (checked ? "checked" : "unchecked");
-
-    if (checked)
-    {
-        leftCheckBox.blockSignals(true);
-        leftCheckBox.setChecked(false);
-        leftCheckBox.setEnabled(false);
-        leftCheckBox.blockSignals(false);
-    }
-    else
-    {
-        leftCheckBox.setEnabled(true);
-    }
-}
-#endif
-
 void window::onLeftChecked(bool checked)
 {
     qDebug() << "Left signal" << (checked ? "checked" : "unchecked");

@@ -14,11 +14,11 @@ class ComService
 protected:
     std::mutex buffer_mtx;
     uint8_t buffer[BUFFLEN]{0};
-    std::atomic<bool> status{false};
+    // std::atomic<bool> status{false};
     virtual void run(void) = 0;
 
 public:
-    bool getStatus(void) { return status; }
+    // bool getStatus(void) { return status; }
 
     void setTemperature(int32_t temperature);
     void setBatteryLevel(uint32_t level);

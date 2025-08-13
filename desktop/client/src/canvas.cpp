@@ -29,7 +29,7 @@ void Canvas::paintEvent(QPaintEvent *event)
         drawTurnSignals();
     }
 
-    if (service->get_connection_state())
+    if (service->get_status())
     {
         drawSpeedomterIcon();
     }

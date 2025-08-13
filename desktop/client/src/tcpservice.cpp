@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <cstring>
 
-TCPService::TCPService() : COMService(), connected{false}, end{false}
+TCPService::TCPService() : COMService()
 {
     std::cout << "Initializing tcp service\n";
     server_address.sin_family = AF_INET;
@@ -36,16 +36,16 @@ void TCPService::run()
         else
         {
             std::cout << "Connected\n";
-            connected = true;
+            status = true;
         }
-        while (!end && connected)
+        while (!end && status)
         {
             uint8_t temp_buffer[sizeof(buffer)];
             int number_of_bytes_read = read(client_fd, temp_buffer, sizeof(temp_buffer));
             if (number_of_bytes_read <= 0)
             {
                 std::cerr << "Failed to read buffer\n";
-                connected = false;
+                status = false;
                 close(client_fd);
             }
             else
@@ -60,6 +60,6 @@ void TCPService::run()
     {
         close(client_fd);
         client_fd = -1;
+        status = false;
     }
 }
-bool TCPService::get_connection_state() { return connected; }
