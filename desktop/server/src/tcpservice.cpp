@@ -1,79 +1,89 @@
-#include "setting.h"
-#include "tcpservice.h"
-#include <iostream>
+#include <cstdlib>
+#include <thread>
 #include <cstring>
-#include <unistd.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
+#include "tcpservice.h"
 
-void TCPService::serverLoop()
+TCPService::TCPService() : ComService(), end{false}
 {
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd == -1)
+    /* ----- create server ------- */
+    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
-        std::cerr << "Socket creation failed.\n";
-        return;
+        std::cerr << "Socket failed\n";
+        exit(EXIT_FAILURE);
     }
 
-    sockaddr_in servaddr{};
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_port = htons(12345); // Hardcoded port here
-    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-
-    if (bind(sockfd, (sockaddr *)&servaddr, sizeof(servaddr)) != 0)
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt,
+                   sizeof(opt)))
     {
-        std::cerr << "Bind failed.\n";
-        close(sockfd);
-        sockfd = -1;
-        return;
+        std::cerr << "Setsockopt failed\n";
+        close(server_fd);
+        server_fd = -1;
+        exit(EXIT_FAILURE);
     }
 
-    if (listen(sockfd, 1) != 0)
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons(settings::Server::PORT);
+
+    if (bind((server_fd), (struct sockaddr *)&address, sizeof(address)) < 0)
     {
-        std::cerr << "Listen failed.\n";
-        close(sockfd);
-        sockfd = -1;
-        return;
+        std::cerr << "Bind failed\n";
+        close(server_fd);
+        server_fd = -1;
+        exit(EXIT_FAILURE);
     }
 
-    sockaddr_in cli{};
-    socklen_t len = sizeof(cli);
-    std::cout << "Waiting for client...\n";
-    connfd = accept(sockfd, (sockaddr *)&cli, &len);
-    if (connfd < 0)
+    /* ----- connection thread init ------- */
+    std::thread(&TCPService::handle_connection, this).detach();
+}
+
+void TCPService::handle_connection(void)
+{
+    if (listen(server_fd, 3) < 0)
     {
-        std::cerr << "Accept failed.\n";
-        return;
+        std::cerr << "Listen failed\n";
+        close(server_fd);
+        server_fd = -1;
+        exit(EXIT_FAILURE);
+    }
+    std::cout << "Server is listening on port " << settings::Server::PORT << std::endl;
+
+    socklen_t addrlen = sizeof(address);
+    if ((client_fd =
+             accept(server_fd, (struct sockaddr *)&address,
+                    &addrlen)) < 0)
+    {
+        std::cerr << "Accept failed\n";
+        if (server_fd != -1)
+        {
+            close(server_fd);
+            server_fd = -1;
+        }
+        exit(EXIT_FAILURE);
     }
 
-    std::cout << "Client connected.\n";
+    std::cout << "Connection accepted\n";
 
-    while (running)
+    run();
+}
+
+void TCPService::run()
+{
+    while (!end)
     {
-        std::string localCopy;
+        uint8_t temp_buffer[sizeof(buffer)];
 
         {
-            std::lock_guard<std::mutex> lock(mtx);
-            if (!tempBuffer.empty())
-            {
-                localCopy = tempBuffer;
-                tempBuffer.clear();
-            }
+            std::lock_guard<std::mutex> lock(mutex);
+            std::memcpy(temp_buffer, buffer, sizeof(buffer));
         }
 
-        if (!localCopy.empty())
+        if (send(client_fd, temp_buffer, sizeof(temp_buffer), 0) == -1)
         {
-            ssize_t sent = write(connfd, localCopy.c_str(), localCopy.size());
-            if (sent != static_cast<ssize_t>(localCopy.size()))
-            {
-                std::cerr << "Failed to send full message.\n";
-                break;
-            }
+            std::cerr << "Failed to send buffer\n";
+            break;
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
-
-    std::cout << "Shutting down TCP server...\n";
 }
