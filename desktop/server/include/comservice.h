@@ -12,7 +12,7 @@ class ComService
     void insert(int start, int length, uint32_t value);
 
 protected:
-    std::mutex mtx;
+    std::mutex buffer_mtx;
     uint8_t buffer[BUFFLEN]{0};
     std::atomic<bool> status{false};
     virtual void run(void) = 0;

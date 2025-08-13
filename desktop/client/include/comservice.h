@@ -14,7 +14,7 @@ private:
 
 protected:
     uint8_t buffer[BUFFLEN]{};
-    mutable std::mutex buffer_mutex;
+    std::mutex buffer_mutex;
 
 public:
     uint8_t get_speed(void);
