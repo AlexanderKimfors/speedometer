@@ -10,8 +10,7 @@ class TCPService : public COMService
 private:
     int client_fd;
     struct sockaddr_in server_address;
-    std::atomic<bool> connected;
-    std::atomic<bool> end;
+    std::atomic<bool> end{false};
     std::thread worker_thread;
 
 public:
@@ -26,6 +25,5 @@ public:
     }
     bool connected_to_server();
     void run() override;
-    bool get_connection_state() override;
 };
 #endif
