@@ -39,32 +39,39 @@ TCPService::TCPService() : ComService(), end{false}
 
 void TCPService::handle_connection(void)
 {
-    if (listen(server_fd, 3) < 0)
+    while (!end)
     {
-        std::cerr << "Listen failed\n";
-        close(server_fd);
-        server_fd = -1;
-        exit(EXIT_FAILURE);
-    }
-    std::cout << "Server is listening on port " << settings::Server::PORT << std::endl;
-
-    socklen_t addrlen = sizeof(address);
-    if ((client_fd =
-             accept(server_fd, (struct sockaddr *)&address,
-                    &addrlen)) < 0)
-    {
-        std::cerr << "Accept failed\n";
-        if (server_fd != -1)
+        if (listen(server_fd, 3) < 0)
         {
+            std::cerr << "Listen failed\n";
             close(server_fd);
             server_fd = -1;
+            exit(EXIT_FAILURE);
         }
-        exit(EXIT_FAILURE);
+        std::cout << "Server is listening on port " << settings::Server::PORT << std::endl;
+
+        socklen_t addrlen = sizeof(address);
+        if ((client_fd =
+                 accept(server_fd, (struct sockaddr *)&address,
+                        &addrlen)) < 0)
+        {
+            std::cerr << "Accept failed\n";
+            if (server_fd != -1)
+            {
+                close(server_fd);
+                server_fd = -1;
+            }
+            exit(EXIT_FAILURE);
+        }
+
+        std::cout << "Connection accepted\n";
+
+        run();
+        if (client_fd != -1)
+        {
+            close(client_fd);
+        }
     }
-
-    std::cout << "Connection accepted\n";
-
-    run();
 }
 
 void TCPService::run()
