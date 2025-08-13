@@ -17,6 +17,7 @@ TCPService::TCPService() : ComService(), end{false}
     {
         std::cerr << "Setsockopt failed\n";
         close(server_fd);
+        server_fd = -1;
         exit(EXIT_FAILURE);
     }
 
@@ -28,6 +29,7 @@ TCPService::TCPService() : ComService(), end{false}
     {
         std::cerr << "Bind failed\n";
         close(server_fd);
+        server_fd = -1;
         exit(EXIT_FAILURE);
     }
 
@@ -37,31 +39,32 @@ TCPService::TCPService() : ComService(), end{false}
 
 void TCPService::handle_connection(void)
 {
-
-    while (!end)
+    if (listen(server_fd, 3) < 0)
     {
-        if (listen(server_fd, 3) < 0)
-        {
-            std::cerr << "Listen failed\n";
-            close(server_fd);
-            exit(EXIT_FAILURE);
-        }
-        std::cout << "Server is listening on port " << settings::Server::PORT << std::endl;
-
-        socklen_t addrlen = sizeof(address);
-        if ((client_fd =
-                 accept(server_fd, (struct sockaddr *)&address,
-                        &addrlen)) < 0)
-        {
-            std::cerr << "Accept failed\n";
-            continue;
-        }
-
-        std::cout << "Connection accepted\n";
-
-        run();
-        close(client_fd);
+        std::cerr << "Listen failed\n";
+        close(server_fd);
+        server_fd = -1;
+        exit(EXIT_FAILURE);
     }
+    std::cout << "Server is listening on port " << settings::Server::PORT << std::endl;
+
+    socklen_t addrlen = sizeof(address);
+    if ((client_fd =
+             accept(server_fd, (struct sockaddr *)&address,
+                    &addrlen)) < 0)
+    {
+        std::cerr << "Accept failed\n";
+        if (server_fd != -1)
+        {
+            close(server_fd);
+            server_fd = -1;
+        }
+        exit(EXIT_FAILURE);
+    }
+
+    std::cout << "Connection accepted\n";
+
+    run();
 }
 
 void TCPService::run()

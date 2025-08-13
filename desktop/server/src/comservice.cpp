@@ -40,7 +40,7 @@ void ComService::setTemperature(int32_t temperature)
 
 void ComService::setBatteryLevel(uint32_t level)
 {
-    insert(signal["Battery level"].bit_offset, signal["Battery level"].bit_size, level);
+    insert(signal["battery"].bit_offset, signal["battery"].bit_size, level);
 }
 
 void ComService::setRightLight(bool state)

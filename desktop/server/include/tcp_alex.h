@@ -24,8 +24,14 @@ private:
 public:
     ~TCPService()
     {
-        close(server_fd);
-        close(client_fd);
+        if (server_fd != -1)
+        {
+            close(server_fd);
+        }
+        if (client_fd != -1)
+        {
+            close(client_fd);
+        }
         end = true;
     }
     TCPService();

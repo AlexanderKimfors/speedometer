@@ -142,7 +142,7 @@ namespace settings
         };
 
         constexpr static signal_type signal_list[] = SIGNALS;
-        std::map<const char *, const signal_value> signalMap;
+        std::map<const std::string, const signal_value> signalMap;
     };
     namespace Server
     {
