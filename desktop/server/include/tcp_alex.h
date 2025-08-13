@@ -1,0 +1,42 @@
+#ifndef TCPSERVICE_H
+#define TCPSERVICE_H
+
+#include "comservice.h"
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <iostream>
+#include <unistd.h>
+#include <atomic>
+#include <mutex>
+
+class TCPService : public ComService
+{
+private:
+    int server_fd;
+    int client_fd;
+    struct sockaddr_in address;
+    static constexpr int opt = 1;
+    std::atomic<bool> end;
+    std::mutex mutex;
+
+    void handle_connection(void);
+
+public:
+    ~TCPService()
+    {
+        if (server_fd != -1)
+        {
+            close(server_fd);
+        }
+        if (client_fd != -1)
+        {
+            close(client_fd);
+        }
+        end = true;
+    }
+    TCPService();
+
+    void run() override;
+};
+
+#endif

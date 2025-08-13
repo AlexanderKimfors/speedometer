@@ -30,7 +30,7 @@ window::window(ComService *_service) : service{_service}
         slider.setFixedWidth(600);
     };
 
-    Settings::Signal &settings = Settings::Signal::getInstance();
+    settings::Settings &settings = settings::Settings::getInstance();
     setupSlider(speedSlider, settings["speed"].min, settings["speed"].max);
     setupSlider(tempSlider, settings["temperature"].min, settings["temperature"].max);
     setupSlider(batterySlider, settings["battery"].min, settings["battery"].max);
@@ -72,33 +72,37 @@ window::window(ComService *_service) : service{_service}
 
     connect(&leftCheckBox, &QCheckBox::toggled, this, &window::onLeftChecked);
     connect(&rightCheckBox, &QCheckBox::toggled, this, &window::onRightChecked);
+    connect(&warningCheckBox, &QCheckBox::toggled, this, &window::onWarningChecked);
 }
 
 window::~window() {}
 
 void window::onSpeedChanged(int val)
 {
-    service->setSpeed[val];
+    service->setSpeed(val);
     speedValueLabel.setText(QString("%1 km/h").arg(val));
     qDebug() << "Speed changed:" << val << "km/h";
 }
 
 void window::onTemperatureChanged(int val)
 {
-    service->setTemperature[val];
+    service->setTemperature(val);
     tempValueLabel.setText(QString("%1 °C").arg(val));
     qDebug() << "Temperature changed:" << val << "°C";
 }
 
 void window::onBatteryChanged(int val)
 {
-    service->setBatteryLevel[val];
+    service->setBatteryLevel(val);
     batteryValueLabel.setText(QString("%1 %").arg(val));
     qDebug() << "Battery changed:" << val << "%";
 }
 
+#if 0
+
 void window::onLeftChecked(bool checked)
 {
+    service->setLeftLight(checked);
     if (warningCheckBox.isChecked())
     {
         qDebug() << "Left signal ignored due to active warning.";
@@ -126,6 +130,7 @@ void window::onLeftChecked(bool checked)
 
 void window::onRightChecked(bool checked)
 {
+    service->setRightLight(checked);
     if (warningCheckBox.isChecked())
     {
         qDebug() << "Right signal ignored due to active warning.";
@@ -150,4 +155,77 @@ void window::onRightChecked(bool checked)
         leftCheckBox.setEnabled(true);
     }
 }
+#endif
 
+void window::onLeftChecked(bool checked)
+{
+    qDebug() << "Left signal" << (checked ? "checked" : "unchecked");
+
+    if (!warningCheckBox.isChecked())
+    {
+        service->setLeftLight(checked);
+    }
+
+    if (checked)
+    {
+
+        rightCheckBox.setEnabled(false);
+    }
+    else
+    {
+        rightCheckBox.setEnabled(true);
+    }
+}
+
+void window::onRightChecked(bool checked)
+{
+    qDebug() << "Right signal" << (checked ? "checked" : "unchecked");
+
+    if (!warningCheckBox.isChecked())
+    {
+        service->setRightLight(checked);
+    }
+
+    if (checked)
+    {
+        leftCheckBox.setEnabled(false);
+    }
+    else
+    {
+        leftCheckBox.setEnabled(true);
+    }
+}
+
+void window::onWarningChecked(bool checked)
+{
+    qDebug() << "Warning signal" << (checked ? "checked" : "unchecked");
+
+    if (checked)
+    {
+        service->setLeftLight(true);
+        service->setRightLight(true);
+    }
+    else
+    {
+        if (leftCheckBox.isChecked())
+        {
+            service->setLeftLight(true);
+            rightCheckBox.setEnabled(false);
+        }
+        else
+        {
+            service->setLeftLight(false);
+            rightCheckBox.setEnabled(true);
+        }
+        if (rightCheckBox.isChecked())
+        {
+            service->setRightLight(true);
+            leftCheckBox.setEnabled(false);
+        }
+        else
+        {
+            service->setRightLight(false);
+            leftCheckBox.setEnabled(true);
+        }
+    }
+}

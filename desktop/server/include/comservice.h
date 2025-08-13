@@ -8,7 +8,7 @@
 
 class ComService
 {
-    Settings::Signal &signal{Settings::Signal::getInstance()};
+    settings::Settings &signal{settings::Settings::getInstance()};
     void insert(int start, int length, uint32_t value);
 
 protected:
@@ -18,8 +18,6 @@ protected:
     virtual void run(void) = 0;
 
 public:
-    ComService();
-
     bool getStatus(void) { return status; }
 
     void setTemperature(int32_t temperature);

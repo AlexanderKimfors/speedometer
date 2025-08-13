@@ -4,7 +4,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <atomic>
-#include <thread>class TCPService : public COMService
+#include <thread>
+class TCPService : public COMService
 {
 private:
     int client_fd;

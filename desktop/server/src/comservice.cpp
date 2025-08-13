@@ -1,4 +1,32 @@
 #include "comservice.h"
+#include <climits>
+void ComService::insert(int start_bit, int bit_length, uint32_t data)
+{
+    int byte_index{start_bit / CHAR_BIT};
+    int bit_index{start_bit % CHAR_BIT};
+
+    for (int i = 0; i < bit_length; i++)
+    {
+        uint8_t bit = (data >> i) & 1;
+
+        if (bit == 0) // clear the bit at the position
+        {
+            buffer[byte_index] &= ~(1 << bit_index);
+        }
+        else // set the bit at the position
+        {
+            buffer[byte_index] |= bit << bit_index;
+        }
+
+        bit_index++;
+
+        if (bit_index == CHAR_BIT)
+        {
+            bit_index = 0;
+            byte_index++;
+        }
+    }
+}
 
 void ComService::setSpeed(uint32_t speed)
 {
@@ -12,7 +40,7 @@ void ComService::setTemperature(int32_t temperature)
 
 void ComService::setBatteryLevel(uint32_t level)
 {
-    insert(signal["Battery level"].bit_offset, signal["Battery level"].bit_size, level);
+    insert(signal["battery"].bit_offset, signal["battery"].bit_size, level);
 }
 
 void ComService::setRightLight(bool state)
