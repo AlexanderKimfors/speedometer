@@ -28,7 +28,12 @@
  * ```cpp
  * #include "setting.h"
  * using namespace settings;
- * Settings& settings = Settings::handle();
+ * Signal& settings = Signal::getInstance();
+ *
+ * // Accessing signal values using subscript operator
+ * int update_speed = settings["speed"].bit_size;
+ * std::cout << "Speed Bit Size: " << update_speed << std::endl;
+ *
  *
  * int update_speed_max(settings["speed"].max);
  * std::cout << "Speed Max: " << update_speed_max << std::endl;
@@ -64,7 +69,6 @@
 
 #include <string>
 #include <map>
-#include <stdexcept>
 
 namespace settings
 {
@@ -97,7 +101,7 @@ namespace settings
         /**
          * @brief Get the singleton instance of Settings
          *
-         * @return Settings
+         * @return Settings&
          */
         static Settings &getInstance()
         {
@@ -146,7 +150,7 @@ namespace settings
     };
     namespace Server
     {
-        inline constexpr const char *IP_ADRESS{"127.0.0.1"};
+        inline constexpr char *IP_ADRESS{"127.0.0.1"};
         inline constexpr int PORT{8080};
     }
 }
