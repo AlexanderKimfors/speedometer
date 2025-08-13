@@ -4,8 +4,6 @@
 Canvas::Canvas(COMService *_service) : service{_service}
 {
     setFixedSize(Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT);
-    connect(&blink_timer, &QTimer::timeout, this, &Canvas::toggle_blink);
-    blink_timer.start(500);
 }
 
 void Canvas::paintEvent(QPaintEvent *event)
