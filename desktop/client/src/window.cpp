@@ -8,4 +8,6 @@ Window::Window(COMService *_service) : canvas{_service}
     setLayout(&mainLayout);
     setWindowTitle("Client");
     mainLayout.addWidget(&canvas);
+    connect(&blink_timer, &QTimer::timeout, &canvas, &Canvas::toggle_blink);
+    blink_timer.start(500);
 }

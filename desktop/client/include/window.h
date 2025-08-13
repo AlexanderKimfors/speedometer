@@ -4,11 +4,13 @@
 #include "canvas.h"
 #include <QDialog>
 #include <QVBoxLayout>
+#include <QTimer>
 
 class Window : public QDialog
 {
     QVBoxLayout mainLayout{this};
     Canvas canvas;
+    QTimer blink_timer;
 
 public:
     explicit Window(COMService *_service);
