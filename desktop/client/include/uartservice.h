@@ -3,7 +3,6 @@
 
 #include <QThread>
 #include <QDebug>
-#include <QSerialPort>
 #include "comservice.h"
 #include "setting.h"
 
@@ -20,47 +19,7 @@ public:
         wait();
     }
 
-    void run() override
-    {
-        QSerialPort serial;
-
-        serial.setPortName(settings::SerialPort::CLIENT_PORT);
-        serial.setBaudRate(BAUDRATE);
-        serial.setDataBits(QSerialPort::Data8);
-        serial.setParity(QSerialPort::NoParity);
-        serial.setStopBits(QSerialPort::OneStop);
-        serial.setFlowControl(QSerialPort::NoFlowControl);
-
-        serial.open(QIODevice::ReadOnly);
-
-        qDebug() << "Serial port is opened";
-
-        uint8_t buffer[256]{0};
-
-        while (true)
-        {
-            if (serial.waitForReadyRead(1000))
-            { // väntar max 1 sekund
-                qint64 bytesRead = serial.read(reinterpret_cast<char *>(buffer), sizeof(buffer));
-                if (bytesRead > 0)
-                {
-                    qDebug() << "Data received:";
-                    for (int i = 0; i < bytesRead; i++)
-                    {
-                        qDebug() << buffer[i];
-                    }
-                }
-                else
-                {
-                    qDebug() << "Tom data mottagen";
-                }
-            }
-            else
-            {
-                qDebug() << "Ingen data mottagen inom 1 sekund";
-            }
-        }
-    }
+    void run() override;
 };
 
 #endif

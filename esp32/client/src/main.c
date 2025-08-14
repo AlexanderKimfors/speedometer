@@ -4,13 +4,10 @@
 // #include <esp_log.h>
 #include <driver/gpio.h>
 #include <driver/uart.h>
+#include "setting.h"
 
-#define UART UART_NUM_0                  // Using UART1
-#define TX_PIN GPIO_NUM_5                // Define TX pin
-#define RX_PIN GPIO_NUM_4                // Define RX pin
+#define UART UART_NUM_0                  // Using UART0
 #define BUF_SIZE (2 * SOC_UART_FIFO_LEN) // Buffer size shall be greater than SOC_UART_FIFO_LEN
-#define MSGLEN 8                         // Message length
-#define BAUDRATE 1048576
 
 static const char *TAG = "UART_Example";
 
@@ -32,15 +29,17 @@ void app_main()
 
     // ESP_LOGI(TAG, "UART initialized");
 
-    uint8_t data = 0;
+    uint8_t data[BUFFLEN];
+
+    data[0] = 20;
+    data[1] = 12;
+    data[2] = 21;
 
     while (1)
     {
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(10000));
 
-        data++;
-
-        if (sizeof(data) != uart_write_bytes(UART, &data, sizeof(data)))
+        if (sizeof(data) != uart_write_bytes(UART, data, BUFFLEN))
         {
             // ESP_LOGE(TAG, "Failed to write");
         }
