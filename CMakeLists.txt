@@ -7,7 +7,15 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets SerialPort)
+
+add_executable(test_client 
+    desktop/client/main.cpp
+    desktop/client/include/uartservice.h
+    desktop/client/src/comservice.cpp
+    )
+target_include_directories(test_client PRIVATE ./desktop/client/include ./shared)
+target_link_libraries(test_client PRIVATE Qt6::Core Qt6::Widgets Qt6::SerialPort)
 
 add_executable(client
     desktop/client/main.cpp

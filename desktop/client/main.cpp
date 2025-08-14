@@ -1,17 +1,18 @@
-#include "window.h"
-#include "tcpservice.h"
-#include <QApplication>
+// #include "window.h"
+//  #include "tcpservice.h"
+// #include <QApplication>
+#include "uartservice.h"
 
-int main(int argc, char **argv)
+int main()
 {
-    TCPService tcp_service;
+    UARTService uart;
 
-    COMService *service{&tcp_service};
+    // COMService *service{&tcp_service};
 
-    QApplication app(argc, argv);
+    // QApplication app(argc, argv);
 
-    Window window{service};
-    window.show(); // visar dialogfönstret
+    // Window window{service};
+    // window.show(); // visar dialogfönstret
 
-    return app.exec();
+    // return app.exec();
 }
