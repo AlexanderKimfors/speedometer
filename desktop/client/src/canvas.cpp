@@ -379,18 +379,18 @@ void Canvas::drawTurnSignals(void)
 void Canvas::toggle_blink(void)
 {
     // Fast GUI timer setup
-    static constexpr int BLINK_PERIOD_MS = 350; // how often the arrow toggles
-    static constexpr int BLINK_TICKS = BLINK_PERIOD_MS / settings::INTERVAL;
+    // static constexpr int BLINK_PERIOD_MS = 350; // how often the arrow toggles
+    // static constexpr int BLINK_TICKS = BLINK_PERIOD_MS / settings::INTERVAL;
 
-    static int blinkTick = 0; // divider counter for blink
+    // static int blinkTick = 0; // divider counter for blink
 
     // Called every 50 ms. Only toggle the blink every BLINK_TICKS.
-    blinkTick++;
-    if (blinkTick >= BLINK_TICKS)
-    {
-        blinkTick = 0;
-        blink_on = !blink_on; // toggle every ~310 ms
-    }
+    // blinkTick++;
+    // if (blinkTick >= BLINK_TICKS)
+    // {
+    //     blinkTick = 0;
+    blink_on = !blink_on; // toggle every ~310 ms
+    //}
 
     update(); // keep UI smooth at 50 ms regardless
 }
