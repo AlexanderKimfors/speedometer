@@ -4,12 +4,21 @@
 #include <QWidget>
 #include <QPainter>
 #include "comservice.h"
+#include <QTimer>
+#include <QMediaPlayer>
+#include <QAudioOutput>
+
 class Canvas : public QWidget
 {
 private:
     QPainter painter;
     QFont icon_font{"Material Icons"};
     QFont text_font{"Arial"};
+
+    QMediaPlayer clickPlayer;
+    QAudioOutput clickAudio;
+
+    bool lastBlinkOn = false;
 
     COMService *service;
 
