@@ -2,6 +2,7 @@
 #include <cstring>
 #include "tcpservice.h"
 
+#if 0
 TCPService::TCPService() : ComService(), end{false}
 {
     /* ----- create server ------- */
@@ -89,5 +90,22 @@ void TCPService::run()
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    }
+}
+
+#endif
+
+void TCPService::run()
+{
+    sockaddr_in server_addr;
+    memset(&server_addr, 0, sizeof(server_addr));
+
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(settings::Server::PORT);
+    server_addr.sin_addr.s_addr = inet_addr(settings::Server::IP_ADRESS);
+
+    while (!end)
+    {
+        socket_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
     }
 }

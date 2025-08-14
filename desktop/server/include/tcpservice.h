@@ -10,6 +10,7 @@
 #include <atomic>
 #include <mutex>
 
+#if 0
 class TCPService : public ComService
 {
 private:
@@ -18,6 +19,7 @@ private:
     struct sockaddr_in address;
     static constexpr int opt = 1;
     std::atomic<bool> end;
+    std::mutex mutex;
     std::thread worker_thread;
 
     void handle_connection(void);
@@ -42,6 +44,37 @@ public:
     TCPService();
 
     void run() override;
+};
+#endif
+
+class TCPService : public ComService
+{
+private:
+    int socket_fd;
+    std::atomic<bool> end{false};
+    std::thread worker_thread{&TCPService::run, this};
+
+    void run() override;
+
+public:
+    ~TCPService()
+    {
+        end = true;
+        shutdown(socket_fd, SHUT_RDWR);
+        if (server_fd != -1)
+        {
+            close(server_fd);
+        }
+        if (client_fd != -1)
+        {
+            close(client_fd);
+        }
+        if (worker_thread.joinable())
+        {
+            worker_thread.join();
+        }
+    }
+    TCPService() = default;
 };
 
 #endif
