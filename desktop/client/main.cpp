@@ -1,12 +1,13 @@
 #include "window.h"
-#include "tcpservice.h"
+//  #include "tcpservice.h"
 #include <QApplication>
+#include "uartservice.h"
 
 int main(int argc, char **argv)
 {
-    TCPService tcp_service;
+    UARTService uart;
 
-    COMService *service{&tcp_service};
+    COMService *service{&uart};
 
     QApplication app(argc, argv);
 
