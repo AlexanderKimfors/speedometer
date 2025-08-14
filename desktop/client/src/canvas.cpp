@@ -4,11 +4,9 @@
 Canvas::Canvas(COMService *_service) : service{_service}
 {
     setFixedSize(Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT);
-    connect(&blink_timer, &QTimer::timeout, this, &Canvas::toggle_blink);
-    blink_timer.start(500);
     warningSound.setSource(QUrl::fromLocalFile("sound.wav"));
     warningSound.setLoopCount(1); // Play once per trigger
-    warningSound.setVolume(0.7f); // Adjust volume 
+    warningSound.setVolume(0.7f); // Adjust volume
 }
 
 void Canvas::paintEvent(QPaintEvent *event)
@@ -318,7 +316,7 @@ void Canvas::drawSpeedometerConnectionErrorIcon(void)
     icon_font.setPointSize(Positions::SPEEDOMETER_ICON_SIIZE);
 
     painter.setFont(icon_font);
-    painter.setPen(Qt::white);
+    painter.setPen(Qt::red);
 
     const int icon_x{Positions::SPEEDOMETER_CENTER_X - (Positions::SPEEDOMETER_ICON_WIDTH / 2)};
     const int icon_y{Positions::SPEEDOMETER_CENTER_Y + (Positions::SPEEDOMETER_ARC_RADIUS / 2) - (Positions::SPEEDOMETER_ICON_HIGHT / 2) - Positions::SPEEDOMETER_LABEL_OFFSET_FROM_ARC - Positions::SPEEDOMETER_LABEL_TEXT_HEIGHT};
@@ -357,7 +355,6 @@ void Canvas::drawTurnSignals(void)
         lightActive = true;
     }
 
-
     painter.end();
 
     // Stop immediately if both lights are off
@@ -382,7 +379,6 @@ void Canvas::drawTurnSignals(void)
     lastLightActive = lightActive;
     lastBlinkOn = blink_on;
 }
-
 
 void Canvas::toggle_blink(void)
 {

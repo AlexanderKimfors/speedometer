@@ -20,8 +20,6 @@ private:
 
     COMService *service;
 
-    QTimer blink_timer;
-
     bool blink_on{false};
 
     void paintEvent(QPaintEvent *event) override;
@@ -51,9 +49,8 @@ private:
 
     void drawTurnSignals(void);
 
-    void toggle_blink(void);
-
 public:
+    void toggle_blink(void);
     Canvas(COMService *_service);
 };
 
