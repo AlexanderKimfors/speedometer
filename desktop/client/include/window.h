@@ -10,7 +10,8 @@ class Window : public QDialog
 {
     QVBoxLayout mainLayout{this};
     Canvas canvas;
-    QTimer timer;
+    QTimer blink_timer;
+    QTimer draw_timer;
 
 public:
     explicit Window(COMService *_service);

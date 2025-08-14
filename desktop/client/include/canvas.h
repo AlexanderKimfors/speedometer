@@ -4,7 +4,6 @@
 #include <QWidget>
 #include <QPainter>
 #include "comservice.h"
-#include <QTimer>
 #include <QMediaPlayer>
 #include <QAudioOutput>
 

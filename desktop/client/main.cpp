@@ -1,17 +1,19 @@
 #include "window.h"
-//  #include "tcpservice.h"
+#include "tcpservice.h"
 #include <QApplication>
-#include "uartservice.h"
+// #include "uartservice.h"
 
 int main(int argc, char **argv)
 {
-    UARTService uart;
+    // UARTService service;
 
-    COMService *service{&uart};
+    TCPService service;
+
+    COMService *com_service{&service};
 
     QApplication app(argc, argv);
 
-    Window window{service};
+    Window window{com_service};
     window.show(); // visar dialogfönstret
 
     return app.exec();

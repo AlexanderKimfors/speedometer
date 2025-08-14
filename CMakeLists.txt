@@ -22,7 +22,7 @@ add_executable(client
     desktop/client/src/canvas.cpp
     desktop/client/src/comservice.cpp
     desktop/client/src/tcpservice.cpp
-    desktop/client/include/uartservice.h
+    desktop/client/src/uartservice.cpp
     )
 target_include_directories(client PRIVATE ./desktop/client/include ./shared)
 
