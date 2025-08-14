@@ -4,8 +4,6 @@
 Canvas::Canvas(COMService *_service) : service{_service}
 {
     setFixedSize(Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT);
-    connect(&blink_timer, &QTimer::timeout, this, &Canvas::toggle_blink);
-    blink_timer.start(500);
 }
 
 void Canvas::paintEvent(QPaintEvent *event)
@@ -29,7 +27,7 @@ void Canvas::paintEvent(QPaintEvent *event)
         drawTurnSignals();
     }
 
-    if (service->get_connection_state())
+    if (service->get_status())
     {
         drawSpeedomterIcon();
     }
@@ -315,7 +313,7 @@ void Canvas::drawSpeedometerConnectionErrorIcon(void)
     icon_font.setPointSize(Positions::SPEEDOMETER_ICON_SIIZE);
 
     painter.setFont(icon_font);
-    painter.setPen(Qt::white);
+    painter.setPen(Qt::red);
 
     const int icon_x{Positions::SPEEDOMETER_CENTER_X - (Positions::SPEEDOMETER_ICON_WIDTH / 2)};
     const int icon_y{Positions::SPEEDOMETER_CENTER_Y + (Positions::SPEEDOMETER_ARC_RADIUS / 2) - (Positions::SPEEDOMETER_ICON_HIGHT / 2) - Positions::SPEEDOMETER_LABEL_OFFSET_FROM_ARC - Positions::SPEEDOMETER_LABEL_TEXT_HEIGHT};

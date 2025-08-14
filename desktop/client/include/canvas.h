@@ -4,7 +4,6 @@
 #include <QWidget>
 #include <QPainter>
 #include "comservice.h"
-#include <QTimer>
 class Canvas : public QWidget
 {
 private:
@@ -13,8 +12,6 @@ private:
     QFont text_font{"Arial"};
 
     COMService *service;
-
-    QTimer blink_timer;
 
     bool blink_on{false};
 
@@ -45,9 +42,8 @@ private:
 
     void drawTurnSignals(void);
 
-    void toggle_blink(void);
-
 public:
+    void toggle_blink(void);
     Canvas(COMService *_service);
 };
 
