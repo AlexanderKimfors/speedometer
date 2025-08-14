@@ -35,7 +35,7 @@ public:
 
         qDebug() << "Serial port is opened";
 
-        uint8_t buffer{0};
+        uint8_t buffer[256]{0};
 
         while (true)
         {
@@ -44,10 +44,10 @@ public:
                 qint64 bytesRead = serial.read(reinterpret_cast<char *>(buffer), sizeof(buffer));
                 if (bytesRead > 0)
                 {
-                    qDebug() << "Data mottagen";
+                    qDebug() << "Data received:";
                     for (int i = 0; i < bytesRead; i++)
                     {
-                        qDebug() << buffer;
+                        qDebug() << buffer[i];
                     }
                 }
                 else
