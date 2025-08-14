@@ -5,7 +5,8 @@
 #include <QPainter>
 #include "comservice.h"
 #include <QTimer>
-#include <QSoundEffect>
+#include <QMediaPlayer>
+#include <QAudioOutput>
 
 class Canvas : public QWidget
 {
@@ -14,9 +15,10 @@ private:
     QFont icon_font{"Material Icons"};
     QFont text_font{"Arial"};
 
-    QSoundEffect warningSound;
+    QMediaPlayer clickPlayer;
+    QAudioOutput clickAudio;
+
     bool lastBlinkOn = false;
-    bool lastLightActive = false;
 
     COMService *service;
 

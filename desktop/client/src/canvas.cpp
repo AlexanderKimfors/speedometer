@@ -4,9 +4,12 @@
 Canvas::Canvas(COMService *_service) : service{_service}
 {
     setFixedSize(Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT);
-    warningSound.setSource(QUrl::fromLocalFile("sound.wav"));
-    warningSound.setLoopCount(1); // Play once per trigger
-    warningSound.setVolume(0.7f); // Adjust volume
+
+    clickPlayer.setAudioOutput(&clickAudio);
+    clickAudio.setVolume(0.7f);
+
+    // set the file once (CMake copies sound.wav into the build dir)
+    clickPlayer.setSource(QUrl::fromLocalFile("sound.wav"));
 }
 
 void Canvas::paintEvent(QPaintEvent *event)
@@ -357,38 +360,37 @@ void Canvas::drawTurnSignals(void)
 
     painter.end();
 
-    // Stop immediately if both lights are off
-    if (!lightActive)
+    if (lightActive)
     {
-        if (warningSound.isPlaying())
-            warningSound.stop();
-
-        // Update last state and bail out
-        lastLightActive = lightActive;
-        lastBlinkOn = blink_on;
-        return;
+        if (clickPlayer.mediaStatus() == QMediaPlayer::MediaStatus::EndOfMedia ||
+            clickPlayer.playbackState() != QMediaPlayer::PlaybackState::PlayingState)
+        {
+            clickPlayer.setSource(QUrl());
+            clickPlayer.setSource(QUrl::fromLocalFile("sound.wav"));
+            clickPlayer.play();
+        }
     }
-
-    if (blink_on && (!lastBlinkOn || !lastLightActive))
+    else
     {
-        // Edge detected: start of a new flash
-        warningSound.play();
+        clickPlayer.stop();
     }
-
-    // Remember states for next call
-    lastLightActive = lightActive;
-    lastBlinkOn = blink_on;
 }
 
 void Canvas::toggle_blink(void)
 {
-    if (blink_on)
+    // Fast GUI timer setup
+    static constexpr int BLINK_PERIOD_MS = 350; // how often the arrow toggles
+    static constexpr int BLINK_TICKS = BLINK_PERIOD_MS / settings::INTERVAL;
+
+    static int blinkTick = 0; // divider counter for blink
+
+    // Called every 50 ms. Only toggle the blink every BLINK_TICKS.
+    blinkTick++;
+    if (blinkTick >= BLINK_TICKS)
     {
-        blink_on = false;
+        blinkTick = 0;
+        blink_on = !blink_on; // toggle every ~310 ms
     }
-    else
-    {
-        blink_on = true;
-    }
-    update();
+
+    update(); // keep UI smooth at 50 ms regardless
 }
