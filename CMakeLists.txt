@@ -7,7 +7,13 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Multimedia)
+
+set(RES_DIR "${CMAKE_SOURCE_DIR}/desktop/client/res")
+set(WAV_FILE "sound.wav")
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/${WAV_FILE}")
+    file(COPY ${RES_DIR}/${WAV_FILE} DESTINATION ${CMAKE_BINARY_DIR})
+endif()
 
 add_executable(client
     desktop/client/main.cpp
@@ -17,7 +23,7 @@ add_executable(client
     desktop/client/src/tcpservice.cpp
     )
 target_include_directories(client PRIVATE ./desktop/client/include ./shared)
-target_link_libraries(client PRIVATE Qt6::Core Qt6::Widgets)
+target_link_libraries(client PRIVATE Qt6::Core Qt6::Widgets Qt6::Multimedia)
 
 
 add_executable(server
@@ -27,7 +33,7 @@ add_executable(server
     desktop/server/src/tcpservice.cpp
     )
 target_include_directories(server PRIVATE ./desktop/server/include ./shared)
-target_link_libraries(server PRIVATE Qt6::Core Qt6::Widgets)
+target_link_libraries(server PRIVATE Qt6::Core Qt6::Widgets Qt6::Multimedia)
 
 
 #---------------------------------------------------------------------------------------------

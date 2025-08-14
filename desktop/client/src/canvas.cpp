@@ -4,6 +4,12 @@
 Canvas::Canvas(COMService *_service) : service{_service}
 {
     setFixedSize(Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT);
+
+    clickPlayer.setAudioOutput(&clickAudio);
+    clickAudio.setVolume(0.7f);
+
+    // set the file once (CMake copies sound.wav into the build dir)
+    clickPlayer.setSource(QUrl::fromLocalFile("sound.wav"));
 }
 
 void Canvas::paintEvent(QPaintEvent *event)
@@ -337,29 +343,54 @@ void Canvas::drawTurnSignals(void)
     painter.setFont(icon_font);
     painter.setPen(Qt::green);
 
+    bool lightActive = false;
+
     if (service->get_left_light())
     {
         QRect left_rect(40, 30, 80, 80);
         painter.drawText(left_rect, Qt::AlignCenter, QChar(0xe5c4)); // arrow_left
+        lightActive = true;
     }
     if (service->get_right_light())
     {
         QRect right_rect(590, 30, 80, 80);
         painter.drawText(right_rect, Qt::AlignCenter, QChar(0xe5c8)); // arrow_right
+        lightActive = true;
     }
 
     painter.end();
+
+    if (lightActive)
+    {
+        if (clickPlayer.mediaStatus() == QMediaPlayer::MediaStatus::EndOfMedia ||
+            clickPlayer.playbackState() != QMediaPlayer::PlaybackState::PlayingState)
+        {
+            clickPlayer.setSource(QUrl());
+            clickPlayer.setSource(QUrl::fromLocalFile("sound.wav"));
+            clickPlayer.play();
+        }
+    }
+    else
+    {
+        clickPlayer.stop();
+    }
 }
 
 void Canvas::toggle_blink(void)
 {
-    if (blink_on)
+    // Fast GUI timer setup
+    static constexpr int BLINK_PERIOD_MS = 350; // how often the arrow toggles
+    static constexpr int BLINK_TICKS = BLINK_PERIOD_MS / settings::INTERVAL;
+
+    static int blinkTick = 0; // divider counter for blink
+
+    // Called every 50 ms. Only toggle the blink every BLINK_TICKS.
+    blinkTick++;
+    if (blinkTick >= BLINK_TICKS)
     {
-        blink_on = false;
+        blinkTick = 0;
+        blink_on = !blink_on; // toggle every ~310 ms
     }
-    else
-    {
-        blink_on = true;
-    }
-    update();
+
+    update(); // keep UI smooth at 50 ms regardless
 }
