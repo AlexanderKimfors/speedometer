@@ -74,7 +74,8 @@
 namespace settings
 {
 
-    constexpr int INTERVAL{40};
+    constexpr int DRAW_INTERVAL{20};
+    constexpr int BLINK_INTERVAL{350};
 
     struct signal_value
     {
@@ -153,6 +154,13 @@ namespace settings
     {
         inline constexpr const char *IP_ADRESS{"127.0.0.1"};
         inline constexpr int PORT{8080};
+    }
+
+    namespace SerialPort
+    {
+        inline constexpr int WAIT_FOR_DATA_MS{100};
+        inline constexpr char CLIENT_PORT[]{"/dev/ttyUSB0"};
+        inline constexpr char SERVER_PORT[]{"/dev/ttyUSB1"};
     }
 }
 #endif

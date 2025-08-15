@@ -1,5 +1,6 @@
 #include "window.h"
 #include "canvas.h"
+#include "setting.h"
 
 Window::Window(COMService *_service) : canvas{_service}
 {
@@ -8,6 +9,8 @@ Window::Window(COMService *_service) : canvas{_service}
     setLayout(&mainLayout);
     setWindowTitle("Client");
     mainLayout.addWidget(&canvas);
+    connect(&draw_timer, SIGNAL(timeout()), &canvas, SLOT(update()));
     connect(&blink_timer, &QTimer::timeout, &canvas, &Canvas::toggle_blink);
-    blink_timer.start(500);
+    draw_timer.start(settings::DRAW_INTERVAL);
+    blink_timer.start(settings::BLINK_INTERVAL);
 }

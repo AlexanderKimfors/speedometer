@@ -79,6 +79,12 @@ if(UARTCOM)
   target_compile_definitions(server PRIVATE UARTCOM UART_SPORT="${SERVER_UPORT}" UART_CPORT="${CLIENT_UPORT}")
 endif()
 
+# ---------------- sound  ----------------
+set(WAV_FILE "sound.wav")
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/${WAV_FILE}")
+    file(COPY ${RES_DIR}/${WAV_FILE} DESTINATION ${CMAKE_BINARY_DIR})
+endif()
+
 # ---------------- fonts  ----------------
 set(FONT_NAME MaterialIcons.ttf)
 set(SOURCE_FONT_PATH "${CMAKE_SOURCE_DIR}/desktop/client/res/${FONT_NAME}")
@@ -118,4 +124,3 @@ add_custom_target(use_tcp
   COMMENT "Switching to TCP (UARTCOM=OFF) and rebuilding client+server"
 )
 # --------------------------------------------------------------------------------------------
-
