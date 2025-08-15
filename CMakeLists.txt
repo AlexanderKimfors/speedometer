@@ -33,9 +33,10 @@ add_executable(server
     desktop/server/src/window.cpp
     desktop/server/src/comservice.cpp
     desktop/server/src/tcpservice.cpp
+    desktop/server/src/uartservice.cpp
     )
 target_include_directories(server PRIVATE ./desktop/server/include ./shared)
-target_link_libraries(server PRIVATE Qt6::Core Qt6::Widgets Qt6::Multimedia)
+target_link_libraries(server PRIVATE Qt6::Core Qt6::Widgets Qt6::Multimedia Qt6::SerialPort)
 
 
 #---------------------------------------------------------------------------------------------
