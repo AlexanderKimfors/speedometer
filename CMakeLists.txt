@@ -24,7 +24,7 @@ if(UARTCOM)
   set(QT_PROTO_COMPONENT "${QT_PROTO_COMPONENT_UART}")
 endif()
 
-set(QT_COMPONENTS Core Widgets ${QT_PROTO_COMPONENT})
+set(QT_COMPONENTS Core Widgets Multimedia ${QT_PROTO_COMPONENT})
 find_package(Qt6 REQUIRED COMPONENTS ${QT_COMPONENTS})
 
 
@@ -68,7 +68,7 @@ endif()
 # ---------------- targets ----------------
 add_executable(client ${CLIENT_SOURCES})
 target_include_directories(client PUBLIC shared ${CLIENT_DIR}/include)
-target_link_libraries(client PUBLIC Qt6::Core Qt6::Widgets Qt6::${QT_PROTO_COMPONENT})
+target_link_libraries(client PUBLIC Qt6::Core Qt6::Widgets Qt6::Multimedia Qt6::${QT_PROTO_COMPONENT})
 
 add_executable(server ${SERVER_SOURCES})
 target_include_directories(server PUBLIC shared ${SERVER_DIR}/include)
