@@ -15,6 +15,7 @@ class Window : public QDialog
 
 public:
     explicit Window(COMService *_service);
+    void showEvent(QShowEvent *event) override;
 };
 
 #endif // WINDOW_H

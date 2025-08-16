@@ -63,3 +63,45 @@ void TCPService::run()
         status = false;
     }
 }
+
+#if 0
+
+void TCPService::run()
+{
+    sockaddr_in server_addr;
+    memset(&server_addr, 0, sizeof(server_addr));
+
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(settings::Server::PORT);
+    server_addr.sin_addr.s_addr = inet_addr(settings::Server::IP_ADRESS);
+
+    while (!end)
+    {
+        socket_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
+        if(socket_fd > -1)
+        {
+            if(0 == connect(socket_fd, (sockaddr *)&server_addr, sizeof(server_addr)))
+            {
+                uint8_t temp[sizeof(buffer)]{0};
+
+                while(!end)
+                {
+                    status = true;
+
+                    if(sizeof(temp) != read(socket_fd, temp, sizeof(temp)))
+                    {
+                        status = false;
+                        break;
+                    }
+                    else
+                    {
+                        std::scoped_lock lock{buffer_mtx};
+                        std::memcpy(buffer, temp, sizeof(buffer))
+                    }
+                }
+            }
+            close(socket_fd)
+        }
+    }
+}
+#endif

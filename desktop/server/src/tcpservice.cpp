@@ -1,93 +1,105 @@
 #include <cstdlib>
 #include <cstring>
 #include "tcpservice.h"
+#include <iostream>
 
-TCPService::TCPService() : ComService(), end{false}
+TCPService::TCPService() : ComService()
 {
-    /* ----- create server ------- */
-    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
+    static constexpr int opt = 1;
+
+    server_fd = socket(AF_INET, SOCK_STREAM, 0);
+
+    bool server_status{true};
+
+    if (0 > server_fd)
     {
-        std::cerr << "Socket failed\n";
-        exit(EXIT_FAILURE);
+        std::cout << "Failed to create server socket" << std::endl;
+        server_status = false;
     }
-
-    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt,
-                   sizeof(opt)))
+    else
     {
-        std::cerr << "Setsockopt failed\n";
-        close(server_fd);
-        server_fd = -1;
-        exit(EXIT_FAILURE);
-    }
-
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(settings::Server::PORT);
-
-    if (bind((server_fd), (struct sockaddr *)&address, sizeof(address)) < 0)
-    {
-        std::cerr << "Bind failed\n";
-        close(server_fd);
-        server_fd = -1;
-        exit(EXIT_FAILURE);
-    }
-
-    /* ----- connection thread init ------- */
-    worker_thread = std::thread(&TCPService::handle_connection, this);
-}
-
-void TCPService::handle_connection(void)
-{
-    while (!end)
-    {
-
-        if (listen(server_fd, 3) < 0)
+        if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt,
+                       sizeof(opt)))
         {
-            std::cerr << "Listen failed\n";
+            std::cerr << "Setsockopt failed\n";
             close(server_fd);
             server_fd = -1;
             exit(EXIT_FAILURE);
         }
-        std::cout << "Server is listening on port " << settings::Server::PORT << std::endl;
 
-        socklen_t addrlen = sizeof(address);
-        if ((client_fd =
-                 accept(server_fd, (struct sockaddr *)&address,
-                        &addrlen)) < 0)
+        sockaddr_in server_addr{};
+
+        server_addr.sin_family = AF_INET;
+        server_addr.sin_addr.s_addr = INADDR_ANY;
+        server_addr.sin_port = htons(settings::Server::PORT);
+
+        if (0 > bind(server_fd, (sockaddr *)&server_addr, sizeof(server_addr)))
         {
-            std::cerr << "Accept failed\n";
-            if (server_fd != -1)
-            {
-                close(server_fd);
-                server_fd = -1;
-            }
-            exit(EXIT_FAILURE);
+            std::cout << "Failed to bind the server to the file descriptor" << std::endl;
+            server_status = false;
         }
+        else
+        {
+            if (0 > listen(server_fd, 3))
+            {
+                std::cout << "Failed to set the server in listen mode" << std::endl;
+                server_status = false;
+            }
+            else
+            {
+                std::cout << "The server in now up and running and listening for clients" << std::endl;
+            }
+        }
+    }
 
-        std::cout << "Connection accepted\n";
-
-        run();
-        close(client_fd);
+    if (server_status)
+    {
+        worker_thread = std::thread(&TCPService::run, this);
     }
 }
 
 void TCPService::run()
 {
+    int connection_fd;
     while (!end)
     {
-        uint8_t temp_buffer[sizeof(buffer)];
+        sockaddr_in client_addr{};
+        socklen_t len{sizeof(client_addr)};
 
+        connection_fd = accept(server_fd, (sockaddr *)&client_addr, &len);
+
+        if (0 > connection_fd)
         {
-            std::scoped_lock lock(buffer_mtx);
-            std::memcpy(temp_buffer, buffer, sizeof(buffer));
+            std::cout << "Failed to accepted the client" << std::endl;
+            status = false;
         }
-
-        if (send(client_fd, temp_buffer, sizeof(temp_buffer), 0) == -1)
+        else
         {
-            std::cerr << "Failed to send buffer\n";
-            break;
-        }
+            std::cout << "Connection established" << std::endl;
+            status = true;
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            uint8_t temp_buffer[BUFFLEN]{};
+
+            while (!end)
+            {
+                {
+                    std::scoped_lock lock(buffer_mtx);
+                    std::memcpy(temp_buffer, buffer, BUFFLEN);
+                }
+                if (BUFFLEN == send(connection_fd, temp_buffer, BUFFLEN, 0))
+                {
+                    status = true;
+                    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+                }
+                else
+                {
+                    std::cout << "Failed to send the buffer to the client" << std::endl;
+                    status = false;
+                    break;
+                }
+            }
+            shutdown(connection_fd, SHUT_RDWR);
+            close(connection_fd);
+        }
     }
 }
