@@ -14,34 +14,25 @@ class TCPService : public ComService
 {
 private:
     int server_fd;
-    int client_fd;
-    struct sockaddr_in address;
-    static constexpr int opt = 1;
-    std::atomic<bool> end;
+    std::atomic<bool> end{false};
     std::thread worker_thread;
 
-    void handle_connection(void);
+    void run() override;
 
 public:
+    TCPService();
+
     ~TCPService()
     {
-        if (server_fd != -1)
-        {
-            close(server_fd);
-        }
-        if (client_fd != -1)
-        {
-            close(client_fd);
-        }
         end = true;
+
+        close(server_fd);
+
         if (worker_thread.joinable())
         {
             worker_thread.join();
         }
     }
-    TCPService();
-
-    void run() override;
 };
 
-#endif
+#endif // Alex kod
