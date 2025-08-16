@@ -10,6 +10,35 @@
 #include <atomic>
 #include <mutex>
 
+class TCPService : public ComService
+{
+private:
+    int server_fd;
+    int connection_fd;
+    std::atomic<bool> end{false};
+    std::thread worker_thread;
+
+    void run() override;
+
+public:
+    TCPService();
+
+    ~TCPService()
+    {
+        end = true;
+
+        shutdown(server_fd, SHUT_RDWR);
+        shutdown(connection_fd, SHUT_RDWR);
+        close(server_fd);
+        close(connection_fd);
+
+        if (worker_thread.joinable())
+        {
+            worker_thread.join();
+        }
+    }
+};
+
 #if 0
 class TCPService : public ComService
 {
@@ -47,6 +76,7 @@ public:
 };
 #endif
 
+#if 0 // farochs kod
 class TCPService : public ComService
 {
 private:
@@ -76,5 +106,6 @@ public:
     }
     TCPService() = default;
 };
+#endif
 
 #endif

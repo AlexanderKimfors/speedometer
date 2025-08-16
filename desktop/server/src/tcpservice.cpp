@@ -1,6 +1,80 @@
 #include <cstdlib>
 #include <cstring>
 #include "tcpservice.h"
+#include <iostream>
+
+TCPService::TCPService() : ComService()
+{
+    worker_thread = std::thread(&TCPService::run, this);
+}
+
+void TCPService::run()
+{
+    while (!end)
+    {
+        server_fd = socket(AF_INET, SOCK_STREAM, 0);
+
+        if (-1 != server_fd)
+        {
+            sockaddr_in server_addr{};
+
+            server_addr.sin_family = AF_INET;
+            server_addr.sin_port = htons(settings::Server::PORT);
+            server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+            if (-1 != bind(server_fd, (sockaddr *)&server_addr, sizeof(server_addr)))
+            {
+                if (-1 != listen(server_fd, 1))
+                {
+                    sockaddr_in client_addr{};
+                    socklen_t len{sizeof(client_addr)};
+
+                    connection_fd = accept(server_fd, (sockaddr *)&client_addr, &len);
+                    if (-1 != connection_fd)
+                    {
+                        std::cout << "Connection established" << std::endl;
+                        status = true;
+
+                        uint8_t temp_buffer[BUFFLEN]{};
+
+                        while (!end)
+                        {
+                            {
+                                std::scoped_lock lock(buffer_mtx);
+                                std::memcpy(temp_buffer, buffer, BUFFLEN);
+                            }
+                            if (BUFFLEN == write(connection_fd, temp_buffer, BUFFLEN))
+                            {
+                                std::cout << "Server successfully sended the buffer to the client" << std::endl;
+                                status = true;
+                            }
+                            else
+                            {
+                                std::cout << "Failed to send the buffer to the client" << std::endl;
+                                status = false;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        std::cout << "Faild to connect the client to the server" << std::endl;
+                    }
+                }
+                {
+                    std::cout << "Failed to set the server in listen mode" << std::endl;
+                }
+            }
+            else
+            {
+                std::cout << "Failed to bind the server address to tha file descriptor" << std::endl;
+            }
+        }
+        else
+        {
+            std::cout << "Falied to create server socket" << std::endl;
+        }
+    }
+}
 
 #if 0
 TCPService::TCPService() : ComService(), end{false}
@@ -94,6 +168,7 @@ void TCPService::run()
 
 #endif
 
+#if 0 // Falochs kod
 void TCPService::run()
 {
     sockaddr_in server_addr;
@@ -132,3 +207,4 @@ void TCPService::run()
         }
     }
 }
+#endif

@@ -14,7 +14,7 @@ class ComService
 protected:
     std::mutex buffer_mtx;
     uint8_t buffer[BUFFLEN]{0};
-    // std::atomic<bool> status{false};
+    std::atomic<bool> status{false};
     virtual void run(void) = 0;
 
 public:
