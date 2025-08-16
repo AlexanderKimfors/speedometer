@@ -23,7 +23,6 @@ public:
             worker_thread.join();
         }
     }
-    bool connected_to_server();
     void run() override;
 };
 #endif
