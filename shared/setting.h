@@ -159,8 +159,6 @@ namespace settings
     namespace SerialPort
     {
         inline constexpr int WAIT_FOR_DATA_MS{100};
-        inline constexpr char CLIENT_PORT[]{"/dev/ttyUSB0"};
-        inline constexpr char SERVER_PORT[]{"/dev/ttyUSB1"};
     }
 
     namespace Config
