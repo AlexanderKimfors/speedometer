@@ -3,7 +3,7 @@
 
 Canvas::Canvas(COMService *_service) : service{_service}
 {
-    setFixedSize(Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT);
+    setFixedSize(settings::Config::CLIENT_WINDOW_WIDTH, settings::Config::CLIENT_WINDOW_HEIGHT);
 
     clickPlayer.setAudioOutput(&clickAudio);
     clickAudio.setVolume(0.7f);

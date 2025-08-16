@@ -52,6 +52,8 @@ private:
     void onLeftChecked(bool checked);
     void onRightChecked(bool checked);
     void onWarningChecked(bool checked);
+
+    void showEvent(QShowEvent *) override;
 };
 
 #endif // WINDOW_H

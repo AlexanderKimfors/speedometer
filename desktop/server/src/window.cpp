@@ -1,6 +1,8 @@
 #include "window.h"
 #include "setting.h"
 #include <QDebug>
+#include <QGuiApplication>
+#include <QScreen>
 
 window::window(ComService *_service) : service{_service}
 {
@@ -62,7 +64,7 @@ window::window(ComService *_service) : service{_service}
 
     setLayout(&layout);
     setWindowTitle("Server");
-    setFixedSize(800, 150);
+    setFixedSize(settings::Config::SERVER_WINDOW_WIDTH, settings::Config::SERVER_WINDOW_HEIGHT);
 
     setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint | Qt::WindowStaysOnTopHint);
 
@@ -73,6 +75,14 @@ window::window(ComService *_service) : service{_service}
     connect(&leftCheckBox, &QCheckBox::toggled, this, &window::onLeftChecked);
     connect(&rightCheckBox, &QCheckBox::toggled, this, &window::onRightChecked);
     connect(&warningCheckBox, &QCheckBox::toggled, this, &window::onWarningChecked);
+}
+
+void window::showEvent(QShowEvent *)
+{
+    QRect screenGeometry = QGuiApplication::primaryScreen()->geometry();
+    int x = (screenGeometry.width() - width()) / 2;
+    int y = ((screenGeometry.height() - height()) / 2) + (settings::Config::CLIENT_WINDOW_HEIGHT / 2) + (settings::Config::SERVER_WINDOW_HEIGHT / 2) + settings::Config::OFFSET;
+    move(x, y);
 }
 
 window::~window() {}
