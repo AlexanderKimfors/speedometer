@@ -6,7 +6,7 @@ void UARTService::run()
 {
     QSerialPort serial;
 
-    serial.setPortName(settings::SerialPort::CLIENT_PORT);
+    serial.setPortName(UART_CPORT);
     serial.setBaudRate(BAUDRATE);
     serial.setDataBits(QSerialPort::Data8);
     serial.setParity(QSerialPort::NoParity);
