@@ -162,6 +162,17 @@ namespace settings
         inline constexpr char CLIENT_PORT[]{"/dev/ttyUSB0"};
         inline constexpr char SERVER_PORT[]{"/dev/ttyUSB1"};
     }
+
+    namespace Config
+    {
+        inline constexpr int SERVER_WINDOW_WIDTH{800};
+        inline constexpr int SERVER_WINDOW_HEIGHT{150};
+
+        inline constexpr int CLIENT_WINDOW_WIDTH{800};
+        inline constexpr int CLIENT_WINDOW_HEIGHT{560};
+
+        inline constexpr int OFFSET{38}; // The task bar at the top
+    };
 }
 #endif
 
