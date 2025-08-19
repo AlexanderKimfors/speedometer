@@ -46,58 +46,64 @@ set(CLIENT_UART_SOURCES  ${CLIENT_DIR}/src/uartservice.cpp)
 set(SERVER_UART_SOURCES  ${SERVER_DIR}/src/uartservice.cpp)
 
 
+# ---------------- targets ----------------
+add_executable(client ${CLIENT_SOURCES})
+target_include_directories(client PUBLIC shared ${CLIENT_DIR}/include)
+
+
+add_executable(server ${SERVER_SOURCES})
+target_include_directories(server PUBLIC shared ${SERVER_DIR}/include)
+
+
+
+
 # ----- (UART or TCP) -----
 if(UARTCOM)
     set(SERVER_UPORT "/dev/ttyUSB0")
     set(CLIENT_UPORT "/dev/ttyUSB1")
     add_compile_definitions(UARTCOM UART_SPORT="${SERVER_UPORT}" UART_CPORT="${CLIENT_UPORT}")
 
-    set(CLIENT_SOURCES ${CLIENT_SOURCES} ${CLIENT_DIR}/src/uartservice.cpp)
-    set(SERVER_SOURCES ${SERVER_SOURCES} ${SERVER_DIR}/src/uartservice.cpp)
+    # Add UART sources
+    target_sources(client PRIVATE ${CLIENT_UART_SOURCES})
+    target_sources(server PRIVATE ${SERVER_UART_SOURCES})
 
-    
+    # Link with SerialPort
+    find_package(Qt6 REQUIRED COMPONENTS Core Widgets Multimedia SerialPort)
+    target_link_libraries(client PUBLIC Qt6::Core Qt6::Widgets Qt6::Multimedia Qt6::SerialPort)
+    target_link_libraries(server PUBLIC Qt6::Core Qt6::Widgets Qt6::SerialPort)
+
+    # PlatformIO upload targets
     add_custom_target(upload_client
-        COMMAND ${PLATFORMIO_CLI} run -d ${CMAKE_SOURCE_DIR}/esp32/client --upload-port ${CLIENT_UPORT})
+        COMMAND pio run -d ${CMAKE_SOURCE_DIR}/esp32/client -e esp32-c6-devkitc-1 -t upload --upload-port ${CLIENT_UPORT})
 
     add_custom_target(upload_server
-        COMMAND ${PLATFORMIO_CLI} run -d ${CMAKE_SOURCE_DIR}/esp32/server --upload-port ${SERVER_UPORT})
+        COMMAND pio run -d ${CMAKE_SOURCE_DIR}/esp32/server -e esp32-c6-devkitc-1 -t upload --upload-port ${SERVER_UPORT})
 
     add_custom_target(upload)
     add_dependencies(upload upload_client upload_server)
 
+    # --- Build-only targets (no upload) we can delete later---
     add_custom_target(build_client
-        COMMAND ${PLATFORMIO_CLI} run -d ${CMAKE_SOURCE_DIR}/esp32/client --upload-port ${CLIENT_UPORT})
+        COMMAND pio run -d ${CMAKE_SOURCE_DIR}/esp32/client -e esp32-c6-devkitc-1)
 
     add_custom_target(build_server
-        COMMAND ${PLATFORMIO_CLI} run -d ${CMAKE_SOURCE_DIR}/esp32/server --upload-port ${SERVER_UPORT})
+        COMMAND pio run -d ${CMAKE_SOURCE_DIR}/esp32/server -e esp32-c6-devkitc-1)
 
     add_custom_target(build)
     add_dependencies(build build_client build_server)
 
-    add_custom_target(monitor_client
-        COMMAND ${PLATFORMIO_CLI} device monitor --port ${CLIENT_UPORT} --baud 1048576
-        USES_TERMINAL)
-
-    add_custom_target(monitor_server
-        COMMAND ${PLATFORMIO_CLI} device monitor --port ${SERVER_UPORT} --baud 1048576
-        USES_TERMINAL)
 
 else()
 
-    set(CLIENT_SOURCES ${CLIENT_SOURCES} ${CLIENT_DIR}/src/tcpservice.cpp)
-    set(SERVER_SOURCES ${SERVER_SOURCES} ${SERVER_DIR}/src/tcpservice.cpp)
+    # Add TCP sources
+    target_sources(client PRIVATE ${CLIENT_TCP_SOURCES})
+    target_sources(server PRIVATE ${SERVER_TCP_SOURCES})
+
+    # No SerialPort here
+    find_package(Qt6 REQUIRED COMPONENTS Core Widgets Multimedia)
+    target_link_libraries(client PUBLIC Qt6::Core Qt6::Widgets Qt6::Multimedia)
+    target_link_libraries(server PUBLIC Qt6::Core Qt6::Widgets)
 endif()
-
-
-# ---------------- targets ----------------
-add_executable(client ${CLIENT_SOURCES})
-target_include_directories(client PUBLIC shared ${CLIENT_DIR}/include)
-target_link_libraries(client PUBLIC Qt6::Core Qt6::Widgets Qt6::Multimedia Qt6::${QT_PROTO_COMPONENT})
-
-add_executable(server ${SERVER_SOURCES})
-target_include_directories(server PUBLIC shared ${SERVER_DIR}/include)
-target_link_libraries(server PUBLIC Qt6::Core Qt6::Widgets Qt6::${QT_PROTO_COMPONENT})
-
 
 
 # ---------------- sound  ----------------
