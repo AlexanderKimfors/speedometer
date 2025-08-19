@@ -124,3 +124,60 @@ add_custom_target(use_tcp
   COMMENT "Switching to TCP (UARTCOM=OFF) and rebuilding client+server"
 )
 # --------------------------------------------------------------------------------------------
+
+if(UARTCOM)
+  set(PIO_CLIENT_DIR "${CMAKE_SOURCE_DIR}/esp32/client" CACHE PATH "")
+  set(PIO_SERVER_DIR "${CMAKE_SOURCE_DIR}/esp32/server" CACHE PATH "")
+  set(PIO_CLIENT_ENV "esp32-c6-devkitc-1" CACHE STRING "")
+  set(PIO_SERVER_ENV "esp32-c6-devkitc-1" CACHE STRING "")
+  set(PIO_UPLOAD_SPEED "" CACHE STRING "")
+
+  find_program(PLATFORMIO_CLI NAMES platformio pio)
+  if(NOT PLATFORMIO_CLI)
+    message(FATAL_ERROR "PlatformIO CLI not found")
+  endif()
+
+  set(_CLIENT_PORT "${CLIENT_UPORT}")
+  set(_SERVER_PORT "${SERVER_UPORT}")
+  set(_CLIENT_SPEED_ARG "")
+  set(_SERVER_SPEED_ARG "")
+  if(PIO_UPLOAD_SPEED)
+    set(_CLIENT_SPEED_ARG "--upload-speed=${PIO_UPLOAD_SPEED}")
+    set(_SERVER_SPEED_ARG "--upload-speed=${PIO_UPLOAD_SPEED}")
+  endif()
+
+  add_custom_target(upload_client_mcu
+    COMMAND ${PLATFORMIO_CLI} run -d ${PIO_CLIENT_DIR} -e ${PIO_CLIENT_ENV} -t upload --upload-port ${_CLIENT_PORT} ${_CLIENT_SPEED_ARG}
+    USES_TERMINAL
+  )
+
+  add_custom_target(upload_server_mcu
+    COMMAND ${PLATFORMIO_CLI} run -d ${PIO_SERVER_DIR} -e ${PIO_SERVER_ENV} -t upload --upload-port ${_SERVER_PORT} ${_SERVER_SPEED_ARG}
+    USES_TERMINAL
+  )
+
+  add_custom_target(upload_mcus)
+  add_dependencies(upload_mcus upload_client_mcu upload_server_mcu)
+
+  add_custom_target(monitor_client_mcu
+    COMMAND ${PLATFORMIO_CLI} device monitor --port ${_CLIENT_PORT} --baud 1048576
+    USES_TERMINAL
+  )
+
+  add_custom_target(monitor_server_mcu
+    COMMAND ${PLATFORMIO_CLI} device monitor --port ${_SERVER_PORT} --baud 1048576
+    USES_TERMINAL
+  )
+# Build-only (no upload)
+add_custom_target(build_client_mcu
+  COMMAND ${PLATFORMIO_CLI} run -d ${PIO_CLIENT_DIR} -e ${PIO_CLIENT_ENV}
+  USES_TERMINAL)
+
+add_custom_target(build_server_mcu
+  COMMAND ${PLATFORMIO_CLI} run -d ${PIO_SERVER_DIR} -e ${PIO_SERVER_ENV}
+  USES_TERMINAL)
+
+add_custom_target(build_mcus)
+add_dependencies(build_mcus build_client_mcu build_server_mcu)
+
+endif()
