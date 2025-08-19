@@ -146,38 +146,38 @@ if(UARTCOM)
     set(_SERVER_SPEED_ARG "--upload-speed=${PIO_UPLOAD_SPEED}")
   endif()
 
-  add_custom_target(upload_client_mcu
+  add_custom_target(upload_client
     COMMAND ${PLATFORMIO_CLI} run -d ${PIO_CLIENT_DIR} -e ${PIO_CLIENT_ENV} -t upload --upload-port ${_CLIENT_PORT} ${_CLIENT_SPEED_ARG}
     USES_TERMINAL
   )
 
-  add_custom_target(upload_server_mcu
+  add_custom_target(upload_server
     COMMAND ${PLATFORMIO_CLI} run -d ${PIO_SERVER_DIR} -e ${PIO_SERVER_ENV} -t upload --upload-port ${_SERVER_PORT} ${_SERVER_SPEED_ARG}
     USES_TERMINAL
   )
 
-  add_custom_target(upload_mcus)
-  add_dependencies(upload_mcus upload_client_mcu upload_server_mcu)
+  add_custom_target(upload)
+  add_dependencies(upload upload_client upload_server)
 
-  add_custom_target(monitor_client_mcu
+  add_custom_target(monitor_client
     COMMAND ${PLATFORMIO_CLI} device monitor --port ${_CLIENT_PORT} --baud 1048576
     USES_TERMINAL
   )
 
-  add_custom_target(monitor_server_mcu
+  add_custom_target(monitor_server
     COMMAND ${PLATFORMIO_CLI} device monitor --port ${_SERVER_PORT} --baud 1048576
     USES_TERMINAL
   )
 # Build-only (no upload)
-add_custom_target(build_client_mcu
+add_custom_target(build_client
   COMMAND ${PLATFORMIO_CLI} run -d ${PIO_CLIENT_DIR} -e ${PIO_CLIENT_ENV}
   USES_TERMINAL)
 
-add_custom_target(build_server_mcu
+add_custom_target(build_server
   COMMAND ${PLATFORMIO_CLI} run -d ${PIO_SERVER_DIR} -e ${PIO_SERVER_ENV}
   USES_TERMINAL)
 
-add_custom_target(build_mcus)
-add_dependencies(build_mcus build_client_mcu build_server_mcu)
+add_custom_target(build)
+add_dependencies(build build_client build_server)
 
 endif()
