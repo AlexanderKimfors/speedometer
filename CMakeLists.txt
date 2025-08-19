@@ -12,11 +12,8 @@ set(SERVER_DIR desktop/server)
 set(RES_DIR    ${CLIENT_DIR}/res)
 set(FONTS_DIR  "$ENV{HOME}/.local/share/fonts")
 
-set(SERVER_UPORT "/dev/ttyUSB0" CACHE STRING "Server UART port")
-set(CLIENT_UPORT "/dev/ttyUSB1" CACHE STRING "Client UART port")
 
 # ---------------- Qt components (GLOBAL) ----------------
-set(QT_PROTO_COMPONENT_TCP  "Network"    CACHE STRING "Qt6 component for TCP")
 set(QT_PROTO_COMPONENT_UART "SerialPort" CACHE STRING "Qt6 component for UART")
 
 set(QT_PROTO_COMPONENT "${QT_PROTO_COMPONENT_TCP}")
@@ -51,19 +48,46 @@ set(SERVER_UART_SOURCES  ${SERVER_DIR}/src/uartservice.cpp)
 
 # ----- (UART or TCP) -----
 if(UARTCOM)
-  add_compile_definitions(UARTCOM UART_SPORT="${SERVER_UPORT}" UART_CPORT="${CLIENT_UPORT}")
-  set(CLIENT_SOURCES ${CLIENT_SOURCES} ${CLIENT_UART_SOURCES})
-  set(CLIENT_LIBRARIES Qt6::Core Qt6::Widgets ${PROTO_QT_TARGET})
+    set(SERVER_UPORT "/dev/ttyUSB0")
+    set(CLIENT_UPORT "/dev/ttyUSB1")
+    add_compile_definitions(UARTCOM UART_SPORT="${SERVER_UPORT}" UART_CPORT="${CLIENT_UPORT}")
 
-  set(SERVER_SOURCES ${SERVER_SOURCES} ${SERVER_UART_SOURCES})
-  set(SERVER_LIBRARIES Qt6::Core Qt6::Widgets ${PROTO_QT_TARGET})
+    set(CLIENT_SOURCES ${CLIENT_SOURCES} ${CLIENT_DIR}/src/uartservice.cpp)
+    set(SERVER_SOURCES ${SERVER_SOURCES} ${SERVER_DIR}/src/uartservice.cpp)
+
+    
+    add_custom_target(upload_client
+        COMMAND ${PLATFORMIO_CLI} run -d ${CMAKE_SOURCE_DIR}/esp32/client --upload-port ${CLIENT_UPORT})
+
+    add_custom_target(upload_server
+        COMMAND ${PLATFORMIO_CLI} run -d ${CMAKE_SOURCE_DIR}/esp32/server --upload-port ${SERVER_UPORT})
+
+    add_custom_target(upload)
+    add_dependencies(upload upload_client upload_server)
+
+    add_custom_target(build_client
+        COMMAND ${PLATFORMIO_CLI} run -d ${CMAKE_SOURCE_DIR}/esp32/client --upload-port ${CLIENT_UPORT})
+
+    add_custom_target(build_server
+        COMMAND ${PLATFORMIO_CLI} run -d ${CMAKE_SOURCE_DIR}/esp32/server --upload-port ${SERVER_UPORT})
+
+    add_custom_target(build)
+    add_dependencies(build build_client build_server)
+
+    add_custom_target(monitor_client
+        COMMAND ${PLATFORMIO_CLI} device monitor --port ${CLIENT_UPORT} --baud 1048576
+        USES_TERMINAL)
+
+    add_custom_target(monitor_server
+        COMMAND ${PLATFORMIO_CLI} device monitor --port ${SERVER_UPORT} --baud 1048576
+        USES_TERMINAL)
+
 else()
-  set(CLIENT_SOURCES ${CLIENT_SOURCES} ${CLIENT_TCP_SOURCES})
-  set(CLIENT_LIBRARIES Qt6::Core Qt6::Widgets ${PROTO_QT_TARGET})
 
-  set(SERVER_SOURCES ${SERVER_SOURCES} ${SERVER_TCP_SOURCES})
-  set(SERVER_LIBRARIES Qt6::Core Qt6::Widgets ${PROTO_QT_TARGET})
+    set(CLIENT_SOURCES ${CLIENT_SOURCES} ${CLIENT_DIR}/src/tcpservice.cpp)
+    set(SERVER_SOURCES ${SERVER_SOURCES} ${SERVER_DIR}/src/tcpservice.cpp)
 endif()
+
 
 # ---------------- targets ----------------
 add_executable(client ${CLIENT_SOURCES})
@@ -74,10 +98,7 @@ add_executable(server ${SERVER_SOURCES})
 target_include_directories(server PUBLIC shared ${SERVER_DIR}/include)
 target_link_libraries(server PUBLIC Qt6::Core Qt6::Widgets Qt6::${QT_PROTO_COMPONENT})
 
-if(UARTCOM)
-  target_compile_definitions(client PRIVATE UARTCOM UART_SPORT="${SERVER_UPORT}" UART_CPORT="${CLIENT_UPORT}")
-  target_compile_definitions(server PRIVATE UARTCOM UART_SPORT="${SERVER_UPORT}" UART_CPORT="${CLIENT_UPORT}")
-endif()
+
 
 # ---------------- sound  ----------------
 set(WAV_FILE "sound.wav")
@@ -125,59 +146,5 @@ add_custom_target(use_tcp
 )
 # --------------------------------------------------------------------------------------------
 
-if(UARTCOM)
-  set(PIO_CLIENT_DIR "${CMAKE_SOURCE_DIR}/esp32/client" CACHE PATH "")
-  set(PIO_SERVER_DIR "${CMAKE_SOURCE_DIR}/esp32/server" CACHE PATH "")
-  set(PIO_CLIENT_ENV "esp32-c6-devkitc-1" CACHE STRING "")
-  set(PIO_SERVER_ENV "esp32-c6-devkitc-1" CACHE STRING "")
-  set(PIO_UPLOAD_SPEED "" CACHE STRING "")
+  
 
-  find_program(PLATFORMIO_CLI NAMES platformio pio)
-  if(NOT PLATFORMIO_CLI)
-    message(FATAL_ERROR "PlatformIO CLI not found")
-  endif()
-
-  set(_CLIENT_PORT "${CLIENT_UPORT}")
-  set(_SERVER_PORT "${SERVER_UPORT}")
-  set(_CLIENT_SPEED_ARG "")
-  set(_SERVER_SPEED_ARG "")
-  if(PIO_UPLOAD_SPEED)
-    set(_CLIENT_SPEED_ARG "--upload-speed=${PIO_UPLOAD_SPEED}")
-    set(_SERVER_SPEED_ARG "--upload-speed=${PIO_UPLOAD_SPEED}")
-  endif()
-
-  add_custom_target(upload_client
-    COMMAND ${PLATFORMIO_CLI} run -d ${PIO_CLIENT_DIR} -e ${PIO_CLIENT_ENV} -t upload --upload-port ${_CLIENT_PORT} ${_CLIENT_SPEED_ARG}
-    USES_TERMINAL
-  )
-
-  add_custom_target(upload_server
-    COMMAND ${PLATFORMIO_CLI} run -d ${PIO_SERVER_DIR} -e ${PIO_SERVER_ENV} -t upload --upload-port ${_SERVER_PORT} ${_SERVER_SPEED_ARG}
-    USES_TERMINAL
-  )
-
-  add_custom_target(upload)
-  add_dependencies(upload upload_client upload_server)
-
-  add_custom_target(monitor_client
-    COMMAND ${PLATFORMIO_CLI} device monitor --port ${_CLIENT_PORT} --baud 1048576
-    USES_TERMINAL
-  )
-
-  add_custom_target(monitor_server
-    COMMAND ${PLATFORMIO_CLI} device monitor --port ${_SERVER_PORT} --baud 1048576
-    USES_TERMINAL
-  )
-# Build-only (no upload)
-add_custom_target(build_client
-  COMMAND ${PLATFORMIO_CLI} run -d ${PIO_CLIENT_DIR} -e ${PIO_CLIENT_ENV}
-  USES_TERMINAL)
-
-add_custom_target(build_server
-  COMMAND ${PLATFORMIO_CLI} run -d ${PIO_SERVER_DIR} -e ${PIO_SERVER_ENV}
-  USES_TERMINAL)
-
-add_custom_target(build)
-add_dependencies(build build_client build_server)
-
-endif()
