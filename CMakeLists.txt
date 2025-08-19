@@ -82,16 +82,6 @@ if(UARTCOM)
     add_custom_target(upload)
     add_dependencies(upload upload_client upload_server)
 
-    # --- Build-only targets (no upload) we can delete later---
-    add_custom_target(build_client
-        COMMAND pio run -d ${CMAKE_SOURCE_DIR}/esp32/client -e esp32-c6-devkitc-1)
-
-    add_custom_target(build_server
-        COMMAND pio run -d ${CMAKE_SOURCE_DIR}/esp32/server -e esp32-c6-devkitc-1)
-
-    add_custom_target(build)
-    add_dependencies(build build_client build_server)
-
 
 else()
 
