@@ -45,7 +45,7 @@ set(SERVER_SOURCES
 set(CLIENT_TCP_SOURCES   ${CLIENT_DIR}/src/tcpservice.cpp)
 set(SERVER_TCP_SOURCES   ${SERVER_DIR}/src/tcpservice.cpp)
 
-set(CLIENT_UART_SOURCES  ${CLIENT_DIR}/src/uartservice.cpp)
+set(CLIENT_UART_SOURCES  ${CLIENT_DIR}/src/uartservice.cpp )
 set(SERVER_UART_SOURCES  ${SERVER_DIR}/src/uartservice.cpp)
 
 

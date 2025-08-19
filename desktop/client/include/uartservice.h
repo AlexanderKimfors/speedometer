@@ -15,9 +15,13 @@ public:
     }
     ~UARTService()
     {
+        end = true;
         quit();
         wait();
     }
+
+private:
+    std::atomic<bool> end{false};
 
     void run() override;
 };
