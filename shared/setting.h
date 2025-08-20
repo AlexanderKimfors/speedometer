@@ -74,7 +74,7 @@
 namespace settings
 {
 
-    constexpr int DRAW_INTERVAL{20};
+    constexpr int DRAW_INTERVAL{40};
     constexpr int BLINK_INTERVAL{350};
 
     struct signal_value

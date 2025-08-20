@@ -5,6 +5,7 @@
 void UARTService::run()
 {
     QSerialPort serial;
+    uint8_t temp[sizeof(buffer)]{0};
 
     serial.setPortName(UART_CPORT);
     serial.setBaudRate(BAUDRATE);
@@ -13,45 +14,43 @@ void UARTService::run()
     serial.setStopBits(QSerialPort::OneStop);
     serial.setFlowControl(QSerialPort::NoFlowControl);
 
-    if (!serial.open(QIODevice::ReadOnly))
+    while (!end)
     {
-        qDebug() << "Could not open the port:" << serial.errorString();
-        exit(EXIT_FAILURE);
-    }
-    else
-    {
-        status = true;
-        qDebug() << "Serial port is opened!";
-    }
-
-    uint8_t temp_buffer[BUFFLEN]{0};
-
-    while (true)
-    {
-        /*
-        läs från buffern till en temp buffer.
-        lås den riktiga buffern och kopiera över temp buffer till den.
-        */
-        if (serial.waitForReadyRead(1000))
-        { // väntar max 1 sekund
-            qint64 bytesRead = serial.read(reinterpret_cast<char *>(temp_buffer), BUFFLEN);
-
-            if (bytesRead > 0)
+        if (serial.open(QIODevice::ReadOnly))
+        {
+            while (!end && serial.isReadable())
             {
-                qDebug() << "Data received:";
-                for (int i = 0; i < BUFFLEN; i++)
-                {
-                    qDebug() << temp_buffer[i];
-                }
+                (void)serial.clear();
 
-                qDebug() << "Sending the data to the buffer";
-                std::scoped_lock lock(buffer_mutex);
-                memcpy(buffer, temp_buffer, BUFFLEN);
+                if (serial.waitForReadyRead(settings::DRAW_INTERVAL * 13))
+                {
+                    if (sizeof(temp) == serial.read(reinterpret_cast<char *>(temp), sizeof(temp)))
+                    {
+                        status = true;
+                        std::scoped_lock<std::mutex> lock{buffer_mutex};
+                        std::memcpy(buffer, temp, sizeof(temp));
+                    }
+                    else
+                    {
+                        status = false;
+                        break;
+                    }
+                }
+                else
+                {
+                    status = false;
+                    break;
+                }
             }
         }
         else
         {
-            qDebug() << "No data received in the time limit.";
+            status = false;
+        }
+
+        if (serial.isOpen())
+        {
+            serial.close();
         }
     }
 }

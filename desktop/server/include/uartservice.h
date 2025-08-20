@@ -7,21 +7,21 @@
 
 class UARTService : public ComService, public QThread
 {
-    public:
-        UARTService()
-        {
-            start();
-        }
-        ~UARTService()
-        {
-            quit();
-            wait();
-        }
+    std::atomic<bool> end{false};
 
-        void run() override;
-    
-        
-    private:
+    void run() override;
+
+public:
+    UARTService()
+    {
+        start();
+    }
+
+    ~UARTService()
+    {
+        end = true;
+        wait();
+    }
 };
 
 #endif

@@ -6,6 +6,7 @@
 void UARTService::run()
 {
     QSerialPort serial;
+    uint8_t temp[sizeof(buffer)]{0};
 
     serial.setPortName(UART_SPORT);
     serial.setBaudRate(BAUDRATE);
@@ -14,47 +15,51 @@ void UARTService::run()
     serial.setStopBits(QSerialPort::OneStop);
     serial.setFlowControl(QSerialPort::NoFlowControl);
 
-    uint8_t temp_buffer[BUFFLEN]{0};
-
-    while (true)
+    while (!end)
     {
         if (serial.open(QIODevice::WriteOnly))
         {
-            printf("Serial port opened successfully.\n");
-            while (1)
+            qDebug() << "Serial port is opened";
+
+            (void)serial.clear();
+
+            while (!end && serial.isWritable())
             {
-                // Write to temp buffer
+                qDebug() << "Serial port is writable";
+
                 {
-                    std::scoped_lock lock(buffer_mtx);
-                    memcpy(temp_buffer, buffer, BUFFLEN);
+                    std::scoped_lock<std::mutex> lock{buffer_mtx};
+                    std::memcpy(temp, buffer, sizeof(buffer));
                 }
 
-                const qint64 data_written = serial.write(reinterpret_cast<char *>(temp_buffer), BUFFLEN);
-
-                if (data_written < 0)
+                if (sizeof(temp) == serial.write(reinterpret_cast<const char *>(temp), sizeof(temp)))
                 {
-                    qDebug() << "Error writing to serial port:" << serial.errorString();
-                    serial.close(); // force reopen next iteration
-                    QThread::msleep(200);
+                    if (serial.flush())
+                    {
+                        status = true;
+                        QThread::msleep(settings::DRAW_INTERVAL);
+                    }
+                    else
+                    {
+                        status = false;
+                        break;
+                    }
+                }
+                else
+                {
+                    status = false;
                     break;
                 }
-
-                if (!serial.waitForBytesWritten(200))
-                {
-                    qWarning() << "waitForBytesWritten timeout:" << serial.errorString();
-                    // optional: serial.clearError();
-                }
-
-                QThread::msleep(settings::DRAW_INTERVAL); // Sleep for a defined interval synced with the draw interval
             }
         }
         else
         {
-            qDebug() << "Could not open the port:" << serial.errorString();
-            QThread::msleep(1000); // Wait before retrying to open the port
+            status = false;
         }
 
-        serial.close();        // Close the port before the next iteration
-        QThread::msleep(1000); // Wait before trying to open the port again
+        if (serial.isOpen())
+        {
+            serial.close();
+        }
     }
 }
