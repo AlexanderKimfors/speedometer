@@ -91,27 +91,22 @@ void window::onSpeedChanged(int val)
 {
     service->setSpeed(val);
     speedValueLabel.setText(QString("%1 km/h").arg(val));
-    qDebug() << "Speed changed:" << val << "km/h";
 }
 
 void window::onTemperatureChanged(int val)
 {
     service->setTemperature(val);
     tempValueLabel.setText(QString("%1 °C").arg(val));
-    qDebug() << "Temperature changed:" << val << "°C";
 }
 
 void window::onBatteryChanged(int val)
 {
     service->setBatteryLevel(val);
     batteryValueLabel.setText(QString("%1 %").arg(val));
-    qDebug() << "Battery changed:" << val << "%";
 }
 
 void window::onLeftChecked(bool checked)
 {
-    qDebug() << "Left signal" << (checked ? "checked" : "unchecked");
-
     if (!warningCheckBox.isChecked())
     {
         service->setLeftLight(checked);
@@ -130,8 +125,6 @@ void window::onLeftChecked(bool checked)
 
 void window::onRightChecked(bool checked)
 {
-    qDebug() << "Right signal" << (checked ? "checked" : "unchecked");
-
     if (!warningCheckBox.isChecked())
     {
         service->setRightLight(checked);
@@ -149,8 +142,6 @@ void window::onRightChecked(bool checked)
 
 void window::onWarningChecked(bool checked)
 {
-    qDebug() << "Warning signal" << (checked ? "checked" : "unchecked");
-
     if (checked)
     {
         service->setLeftLight(true);
