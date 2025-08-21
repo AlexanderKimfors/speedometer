@@ -19,14 +19,10 @@ void UARTService::run()
     {
         if (serial.open(QIODevice::WriteOnly))
         {
-            qDebug() << "Serial port is opened";
-
             (void)serial.clear();
 
             while (!end && serial.isWritable())
             {
-                qDebug() << "Serial port is writable";
-
                 {
                     std::scoped_lock<std::mutex> lock{buffer_mtx};
                     std::memcpy(temp, buffer, sizeof(buffer));
