@@ -37,7 +37,7 @@ static uint16_t conn_handle = BLE_HS_CONN_HANDLE_NONE;
 int gatt_svr_register(void);
 static int ble_server_gap_event(struct ble_gap_event *event, void *arg);
 static int service_gatt_handler(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg);
-// static int ble_svc_gatt_handler(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg);
+//  static int ble_svc_gatt_handler(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg);
 
 static uint8_t own_addr_type;
 static uint16_t ble_svc_gatt_read_val_handle;
@@ -310,7 +310,6 @@ int gatt_svr_init(void)
 
 void ble_client_task(void *pvParameters)
 {
-#if 1
     struct os_mbuf *txom;
     uint8_t buffer[BUFFLEN];
 
@@ -325,36 +324,6 @@ void ble_client_task(void *pvParameters)
             }
         }
     }
-#endif
-#if 0 // Test kod Funkar (Använder inte UART)
-    (void)pvParameters;
-
-    bootloader_random_enable();
-    srand(esp_random());
-    bootloader_random_disable();
-
-    struct os_mbuf *txom;
-    uint8_t buffer[8];
-
-    while (1)
-    {
-        for (int i = 0; i < 8; i++)
-        {
-            buffer[i] = 'a' + (rand() % 26);
-        }
-
-        printf("\n    Sent: %.*s\n", 8, buffer);
-
-        /* Writing characteristics */
-        txom = ble_hs_mbuf_from_flat(buffer, sizeof(buffer));
-        if (0 != ble_gatts_notify_custom(conn_handle, ble_svc_gatt_read_val_handle, txom))
-        {
-            ESP_LOGE(TAG, "Error sending notify");
-        }
-
-        vTaskDelay(pdMS_TO_TICKS(1000));
-    }
-#endif
 }
 
 void app_main(void)
