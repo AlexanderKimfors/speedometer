@@ -14,11 +14,6 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#define NUM_CONNECTIONS 1
-#define PEER_NUM_SERVICES 1
-#define SERVICE_NUM_CHARACTERISTICS 1
-#define CHARACTERISTICS_NUM_DESCRIPTORS 1
-
 #define UART_PORT UART_NUM_0
 #define BUF_SIZE (2 * SOC_UART_FIFO_LEN)
 
@@ -34,7 +29,6 @@ static void ble_client_scan(void);
 static int ble_client_gap_event(struct ble_gap_event *event, void *arg);
 
 // static variabel sätts automatiskt till 0
-static uint16_t attribute_handle = BLE_HS_CONN_HANDLE_NONE;
 static ble_addr_t connected_addr;
 static uint8_t own_addr_type;
 
@@ -61,34 +55,6 @@ static void ble_client_write_subscribe(const struct peer *peer)
     }
 }
 
-// Hittar rätt GATT-karaktäristiks-handle för att kunna skriva till den
-static void ble_client_set_handle(const struct peer *peer)
-{
-    const struct peer_chr *chr = peer_chr_find_uuid(peer, BLE_UUID16_DECLARE(GATT_SVC_UUID), BLE_UUID16_DECLARE(GATT_CHR_UUID));
-    assert(chr != NULL);
-
-    attribute_handle = chr->chr.val_handle;
-    ESP_LOGI(TAG, "attribute_handle %x\n", attribute_handle);
-
-    //-----------------------------------------------------------------------------
-
-    //--------------------------Testa ta bort--------------------------------------
-
-    const struct peer_dsc *dsc = peer_dsc_find_uuid(peer, BLE_UUID16_DECLARE(GATT_SVC_UUID),
-                                                    BLE_UUID16_DECLARE(GATT_CHR_UUID),
-                                                    BLE_UUID16_DECLARE(BLE_GATT_DSC_CLT_CFG_UUID16));
-    if (dsc != NULL)
-    {
-        uint8_t value[2] = {1, 0};
-        ble_gattc_write_flat(peer->conn_handle, dsc->dsc.handle, value, sizeof(value), NULL, NULL);
-    }
-    else
-    {
-        ESP_LOGE(TAG, "Error: Peer lacks a CCCD for the subscribable characteristic\n");
-    }
-    //-----------------------------------------------------------------------------
-}
-
 // Called when service discovery of the specified peer has completed.
 // Efter anslutningen: söker efter tjänster/karaktärer
 static void ble_client_on_disc_complete(const struct peer *peer, int status, void *)
@@ -99,7 +65,7 @@ static void ble_client_on_disc_complete(const struct peer *peer, int status, voi
          * list of services, characteristics, and descriptors that the peer supports. */
         ESP_LOGI(TAG, "Service discovery complete; status=%d conn_handle=%d\n", status, peer->conn_handle);
 
-        ble_client_set_handle(peer);
+        // ble_client_set_handle(peer);
         ble_client_write_subscribe(peer);
     }
     else
@@ -116,24 +82,15 @@ static void ble_client_on_disc_complete(const struct peer *peer, int status, voi
 // Börjar leta efter BLE-enheter
 static void ble_client_scan(void)
 {
-    /* Figure out address to use while advertising */
-    int status = ble_hs_id_infer_auto(0, &own_addr_type);
-    if (status == 0)
-    {
-        struct ble_gap_disc_params disc_params = {0};
+    struct ble_gap_disc_params disc_params = {0};
 
-        disc_params.passive = 1;           /* Perform a passive scan. */
-        disc_params.filter_duplicates = 1; /* Avoid processing repeated advertisements from the same device. */
+    disc_params.passive = 1;           /* Perform a passive scan. */
+    disc_params.filter_duplicates = 1; /* Avoid processing repeated advertisements from the same device. */
 
-        status = ble_gap_disc(own_addr_type, BLE_HS_FOREVER, &disc_params, ble_client_gap_event, NULL);
-        if (status != 0)
-        {
-            ESP_LOGE(TAG, "Error initiating GAP discovery procedure; rc=%d\n", status);
-        }
-    }
-    else
+    int status = ble_gap_disc(own_addr_type, BLE_HS_FOREVER, &disc_params, ble_client_gap_event, NULL);
+    if (status != 0)
     {
-        ESP_LOGE(TAG, "error determining address type; status=%d\n", status);
+        ESP_LOGE(TAG, "Error initiating GAP discovery procedure; rc=%d\n", status);
     }
 }
 
@@ -259,10 +216,13 @@ static int ble_client_gap_event(struct ble_gap_event *event, void *)
         break;
 
     case BLE_GAP_EVENT_DISCONNECT:
+        /* Connection terminated. */
+        ESP_LOGI(TAG, "disconnect; reason=%d ", event->disconnect.reason);
+        print_conn_desc(&event->disconnect.conn);
+
         /* Forget about peer. */
         memset(&connected_addr.val, 0, sizeof(connected_addr.val));
         peer_delete(event->disconnect.conn.conn_handle);
-        attribute_handle = BLE_HS_CONN_HANDLE_NONE;
 
         /* Resume scanning. */
         ble_client_scan();
@@ -301,32 +261,31 @@ static int ble_client_gap_event(struct ble_gap_event *event, void *)
     return status;
 }
 
-/**
- * @brief Setting this device BLE address to random
- *
- * @return true if successful
- * @return false if not successful
- */
-static bool set_random_address(void)
+static void ble_client_on_reset(int reason)
+{
+    ESP_LOGE(TAG, "Resetting state; reason=%d\n", reason);
+}
+
+static void ble_client_on_sync(void)
 {
     uint8_t this_addr_val[6] = {0};
     sscanf(THIS_ADDRESS, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
            &this_addr_val[5], &this_addr_val[4], &this_addr_val[3],
            &this_addr_val[2], &this_addr_val[1], &this_addr_val[0]);
 
+    this_addr_val[5] |= 0xC0;
     own_addr_type = BLE_OWN_ADDR_RANDOM;
 
-    return (0 == ble_hs_id_set_rnd(this_addr_val));
-}
+    assert(0 == ble_hs_id_set_rnd(this_addr_val));
 
-static void ble_client_on_sync(void)
-{
-    assert(set_random_address());
+    printf("BLE Device Address: %02x:%02x:%02x:%02x:%02x:%02x\n",
+           this_addr_val[5], this_addr_val[4], this_addr_val[3], this_addr_val[2], this_addr_val[1], this_addr_val[0]);
 
     /* Begin scanning for a peripheral to connect to. */
     ble_client_scan();
 }
 
+// initsierar och startar NimBLE-stack
 void app_main(void)
 {
     uart_config_t uart_config = {
@@ -352,17 +311,15 @@ void app_main(void)
     ESP_ERROR_CHECK(nimble_port_init());
 
     /* Configure the host. */
+    ble_hs_cfg.reset_cb = ble_client_on_reset;
     ble_hs_cfg.sync_cb = ble_client_on_sync;
     ble_hs_cfg.store_status_cb = ble_store_util_status_rr;
 
     /* Initialize data structures to track connected peers. */
-    assert(0 == peer_init(NUM_CONNECTIONS, PEER_NUM_SERVICES, SERVICE_NUM_CHARACTERISTICS, CHARACTERISTICS_NUM_DESCRIPTORS));
+    assert(0 == peer_init(CONFIG_BT_NIMBLE_MAX_CONNECTIONS, 64, 64, 64));
 
     /* Set the default device name. */
     assert(0 == ble_svc_gap_device_name_set(DEVICE_NAME));
-
-    /* Initialize UART driver and start uart task */
-    // assert(pdTRUE == xTaskCreate(ble_client_task, "uTask", 4096, NULL, 8, NULL));
 
     ESP_LOGI(TAG, "BLE Host Task Started");
     nimble_port_run(); /* This function will return only when nimble_port_stop() is executed */
