@@ -14,6 +14,11 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#define NUM_CONNECTIONS 1
+#define PEER_NUM_SERVICES 1
+#define SERVICE_NUM_CHARACTERISTICS 1
+#define CHARACTERISTICS_NUM_DESCRIPTORS 1
+
 #define UART_PORT UART_NUM_0
 #define BUF_SIZE (2 * SOC_UART_FIFO_LEN)
 
@@ -29,7 +34,7 @@ static void ble_client_scan(void);
 static int ble_client_gap_event(struct ble_gap_event *event, void *arg);
 
 // static variabel sätts automatiskt till 0
-static uint16_t attribute_handle;
+static uint16_t attribute_handle = BLE_HS_CONN_HANDLE_NONE;
 static ble_addr_t connected_addr;
 static uint8_t own_addr_type;
 
@@ -254,14 +259,10 @@ static int ble_client_gap_event(struct ble_gap_event *event, void *)
         break;
 
     case BLE_GAP_EVENT_DISCONNECT:
-        /* Connection terminated. */
-        ESP_LOGI(TAG, "disconnect; reason=%d ", event->disconnect.reason);
-        print_conn_desc(&event->disconnect.conn);
-
         /* Forget about peer. */
         memset(&connected_addr.val, 0, sizeof(connected_addr.val));
         peer_delete(event->disconnect.conn.conn_handle);
-        attribute_handle = 0;
+        attribute_handle = BLE_HS_CONN_HANDLE_NONE;
 
         /* Resume scanning. */
         ble_client_scan();
@@ -300,37 +301,32 @@ static int ble_client_gap_event(struct ble_gap_event *event, void *)
     return status;
 }
 
-static void ble_client_on_reset(int reason)
+/**
+ * @brief Setting this device BLE address to random
+ *
+ * @return true if successful
+ * @return false if not successful
+ */
+static bool set_random_address(void)
 {
-    ESP_LOGE(TAG, "Resetting state; reason=%d\n", reason);
-}
-
-static void ble_client_on_sync(void)
-{
-    /* Make sure we have proper identity address set (public preferred) */
-
-    //-----------------------------NY mjukvaru address-------------------------------------------
     uint8_t this_addr_val[6] = {0};
     sscanf(THIS_ADDRESS, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
            &this_addr_val[5], &this_addr_val[4], &this_addr_val[3],
            &this_addr_val[2], &this_addr_val[1], &this_addr_val[0]);
 
-    this_addr_val[5] |= 0xC0;
     own_addr_type = BLE_OWN_ADDR_RANDOM;
 
-    assert(0 == ble_hs_id_set_rnd(this_addr_val));
+    return (0 == ble_hs_id_set_rnd(this_addr_val));
+}
 
-    printf("BLE Device Address: %02x:%02x:%02x:%02x:%02x:%02x\n",
-           this_addr_val[5], this_addr_val[4], this_addr_val[3], this_addr_val[2], this_addr_val[1], this_addr_val[0]);
-
-    //-------------------------------------------------------------------------------
+static void ble_client_on_sync(void)
+{
+    assert(set_random_address());
 
     /* Begin scanning for a peripheral to connect to. */
     ble_client_scan();
 }
 
-// initsierar och startar NimBLE-stack
-#if 1
 void app_main(void)
 {
     uart_config_t uart_config = {
@@ -356,12 +352,11 @@ void app_main(void)
     ESP_ERROR_CHECK(nimble_port_init());
 
     /* Configure the host. */
-    ble_hs_cfg.reset_cb = ble_client_on_reset;
     ble_hs_cfg.sync_cb = ble_client_on_sync;
     ble_hs_cfg.store_status_cb = ble_store_util_status_rr;
 
     /* Initialize data structures to track connected peers. */
-    assert(0 == peer_init(CONFIG_BT_NIMBLE_MAX_CONNECTIONS, 64, 64, 64));
+    assert(0 == peer_init(NUM_CONNECTIONS, PEER_NUM_SERVICES, SERVICE_NUM_CHARACTERISTICS, CHARACTERISTICS_NUM_DESCRIPTORS));
 
     /* Set the default device name. */
     assert(0 == ble_svc_gap_device_name_set(DEVICE_NAME));
@@ -373,4 +368,3 @@ void app_main(void)
     nimble_port_run(); /* This function will return only when nimble_port_stop() is executed */
     nimble_port_freertos_deinit();
 }
-#endif
