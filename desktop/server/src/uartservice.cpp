@@ -38,12 +38,14 @@ void UARTService::run()
                     else
                     {
                         status = false;
+                        qDebug() << "Error in communication";
                         break;
                     }
                 }
                 else
                 {
                     status = false;
+                    qDebug() << "Error in communication";
                     break;
                 }
             }
@@ -55,6 +57,7 @@ void UARTService::run()
 
         if (serial.isOpen())
         {
+            status = false;
             serial.close();
         }
     }
