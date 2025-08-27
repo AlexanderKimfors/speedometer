@@ -37,6 +37,8 @@ window::window(ComService *_service) : service{_service}
     setupSlider(tempSlider, settings["temperature"].min, settings["temperature"].max);
     setupSlider(batterySlider, settings["battery"].min, settings["battery"].max);
 
+    service->setTemperature(-60);
+
     // Speed row
     speedLayout.addWidget(&speedLabel);
     speedLayout.addWidget(&speedSlider);

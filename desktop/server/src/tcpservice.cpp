@@ -11,14 +11,12 @@ TCPService::TCPService() : ComService()
 
     if (0 > server_fd)
     {
-        std::cout << "Failed to create server socket" << std::endl;
         exit(EXIT_FAILURE);
     }
 
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt,
                    sizeof(opt)))
     {
-        std::cerr << "Setsockopt failed\n";
         close(server_fd);
         exit(EXIT_FAILURE);
     }
@@ -31,17 +29,13 @@ TCPService::TCPService() : ComService()
 
     if (0 > bind(server_fd, (sockaddr *)&server_addr, sizeof(server_addr)))
     {
-        std::cout << "Failed to bind the server to the file descriptor" << std::endl;
         exit(EXIT_FAILURE);
     }
 
     if (0 > listen(server_fd, 3))
     {
-        std::cout << "Failed to set the server in listen mode" << std::endl;
         exit(EXIT_FAILURE);
     }
-
-    std::cout << "The server in now up and running and listening for clients" << std::endl;
 
     worker_thread = std::thread(&TCPService::run, this);
 }
@@ -58,13 +52,11 @@ void TCPService::run()
 
         if (0 > connection_fd)
         {
-            std::cout << "Failed to accepted the client" << std::endl;
             status = false;
             std::this_thread::sleep_for(std::chrono::seconds(1));
             continue;
         }
 
-        std::cout << "Connection established" << std::endl;
         status = true;
 
         uint8_t temp_buffer[BUFFLEN]{};
@@ -82,7 +74,7 @@ void TCPService::run()
             }
             else
             {
-                std::cout << "Failed to send the buffer to the client" << std::endl;
+                std::cout << "Connection lost" << std::endl;
                 status = false;
                 break;
             }

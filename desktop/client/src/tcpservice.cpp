@@ -5,15 +5,12 @@
 
 TCPService::TCPService() : COMService()
 {
-    std::cout << "Initializing tcp service\n";
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(settings::Server::PORT);
     if (inet_pton(AF_INET, settings::Server::IP_ADRESS, &server_address.sin_addr) <= 0)
     {
-        std::cerr << "Invalid address\n";
         exit(EXIT_FAILURE);
     }
-    std::cout << "Connecting to  server...\n";
     worker_thread = std::thread(&TCPService::run, this);
 }
 void TCPService::run()
@@ -22,19 +19,16 @@ void TCPService::run()
     {
         if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) // create at socket for IPv4 and TCP
         {
-            std::cerr << "Socket creation failed\n";
             std::this_thread::sleep_for(std::chrono::seconds(1));
             continue;
         }
         if (connect(client_fd, (struct sockaddr *)&server_address, sizeof(server_address)) < 0) // connects the socket with the server
         {
-            std::cerr << "Connection failed\n";
             close(client_fd);
             std::this_thread::sleep_for(std::chrono::seconds(1));
             continue;
         }
 
-        std::cout << "Connected\n";
         status = true;
 
         while (!end)
@@ -43,8 +37,8 @@ void TCPService::run()
             int number_of_bytes_read = read(client_fd, temp_buffer, sizeof(temp_buffer));
             if (number_of_bytes_read <= 0)
             {
-                std::cerr << "Failed to read buffer\n";
                 close(client_fd);
+                status = false;
                 break;
             }
             else
