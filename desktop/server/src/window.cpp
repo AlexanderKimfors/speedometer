@@ -32,7 +32,7 @@ window::window(ComService *_service) : service{_service}
         slider.setFixedWidth(600);
     };
 
-    settings::Settings &settings = settings::Settings::getInstance();
+    settings::Signals &settings = settings::Signals::getInstance();
     setupSlider(speedSlider, settings["speed"].min, settings["speed"].max);
     setupSlider(tempSlider, settings["temperature"].min, settings["temperature"].max);
     setupSlider(batterySlider, settings["battery"].min, settings["battery"].max);

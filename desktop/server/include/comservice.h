@@ -8,7 +8,7 @@
 
 class ComService
 {
-    settings::Settings &signal{settings::Settings::getInstance()};
+    settings::Signals &signal{settings::Signals::getInstance()};
     void insert(int start, int length, uint32_t value);
 
 protected:
