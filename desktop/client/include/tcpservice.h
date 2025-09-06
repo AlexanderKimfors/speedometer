@@ -13,6 +13,8 @@ private:
     std::atomic<bool> end{false};
     std::thread worker_thread;
 
+    void run() override;
+
 public:
     TCPService();
     ~TCPService()
@@ -23,6 +25,5 @@ public:
             worker_thread.join();
         }
     }
-    void run() override;
 };
 #endif

@@ -35,4 +35,4 @@ public:
     }
 };
 
-#endif // Alex kod
+#endif

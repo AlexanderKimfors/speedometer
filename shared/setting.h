@@ -97,7 +97,7 @@ namespace settings
             : value(value), key(key) {}
     };
 
-    class Settings
+    class Signals
     {
     public:
         /**
@@ -105,9 +105,9 @@ namespace settings
          *
          * @return Settings&
          */
-        static Settings &getInstance()
+        static Signals &getInstance()
         {
-            static Settings instance;
+            static Signals instance;
             return instance;
         }
 
@@ -128,17 +128,17 @@ namespace settings
         }
 
         // Delete copy constructor and assignment operator to enforce singleton pattern
-        Settings(const Settings &) = delete;
-        void operator=(const Settings &) = delete;
+        Signals(const Signals &) = delete;
+        void operator=(const Signals &) = delete;
 
-        static Settings &handle()
+        static Signals &handle()
         {
             return getInstance();
         }
 
     private:
         // Private constructor to prevent instantiation
-        Settings()
+        Signals()
         {
             // Initialize the signal map
             for (const auto &signal : signal_list)

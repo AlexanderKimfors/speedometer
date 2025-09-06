@@ -46,7 +46,7 @@ void TCPService::run()
                 std::scoped_lock lock(buffer_mutex);
                 std::memcpy(buffer, temp_buffer, sizeof(buffer));
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            std::this_thread::sleep_for(std::chrono::milliseconds(settings::DRAW_INTERVAL));
         }
     }
     if (client_fd >= 0)

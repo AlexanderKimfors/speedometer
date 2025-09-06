@@ -17,11 +17,9 @@ private:
     QMediaPlayer clickPlayer;
     QAudioOutput clickAudio;
 
-    bool lastBlinkOn = false;
+    bool blink_on{false};
 
     COMService *service;
-
-    bool blink_on{false};
 
     void paintEvent(QPaintEvent *event) override;
     void drawTemperature(void);

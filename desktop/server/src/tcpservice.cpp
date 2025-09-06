@@ -70,7 +70,7 @@ void TCPService::run()
             if (BUFFLEN == send(connection_fd, temp_buffer, BUFFLEN, 0))
             {
                 status = true;
-                std::this_thread::sleep_for(std::chrono::milliseconds(20));
+                std::this_thread::sleep_for(std::chrono::milliseconds(settings::DRAW_INTERVAL));
             }
             else
             {
